@@ -25,7 +25,7 @@ Setiap payload hook disimpan mentah di `logs/events.jsonl`.
 
 - [x] **Tahap 1** — hooks → server → event log di browser (tanpa grafis)
 - [x] **Tahap 2** — kantor 3D statis, minifigure berganti status
-- [ ] **Tahap 3** — karakter berjalan, gelembung chat, melapor ke PM
+- [x] **Tahap 3** — karakter berjalan, gelembung chat, melapor di ruang rapat
 
 ## Temuan Tahap 1 (Claude Code 2.1.289)
 
@@ -45,8 +45,17 @@ Setiap payload hook disimpan mentah di `logs/events.jsonl`.
 | `public/js/agents.js` | event hooks → status karyawan (tanpa Three.js) |
 | `public/js/minifig.js` | minifigure dari bentuk dasar + pose per status |
 | `public/js/textures.js` | wajah dan sablon badan digambar di canvas |
-| `public/js/office.js` | lantai, dinding bata, meja, ruang rapat, pantry, label |
+| `public/js/office.js` | lantai, dinding bata, meja, ruang rapat, pantry, label, gerak karakter |
+| `public/js/nav.js` | pencari jalan A* di grid lantai agar karakter memutari perabot |
 
 Peran `backend`, `frontend`, dan `qa` punya meja tetap. Subagent lain otomatis mendapat
 minifigure dengan warna tetap (dari hash namanya) di meja cadangan.
 Tambahkan `?timer` di URL bila halaman perlu tetap dirender di tab tersembunyi.
+
+## Kehidupan kantor (Tahap 3)
+
+- Subagent yang tidak bekerja beristirahat di **pantry** sambil memegang mug dan sesekali mengobrol.
+- `SubagentStart` → berjalan ke meja lalu duduk. Jalur dihitung dengan A* (`nav.js`) dan diluruskan.
+- `SubagentHandback` → berjalan ke **ruang rapat** dan melapor; gelembung berisi baris pertama laporannya.
+  Lama rapat dihitung sejak karakter tiba, lalu ia kembali ke pantry.
+- Gelembung PM menampilkan perintah dari kamu dan deskripsi tugas yang dibagikan ke subagent.

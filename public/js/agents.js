@@ -9,7 +9,7 @@ export const ROLES = {
 };
 
 export const STATUS = {
-  asleep: { text: 'Menganggur', color: '#55595f' },
+  asleep: { text: 'Istirahat', color: '#55595f' },
   thinking: { text: 'Berpikir', color: '#f5cb18' },
   typing: { text: 'Mengetik', color: '#3b8cff' },
   reading: { text: 'Membaca', color: '#f4f2ec' },
@@ -28,6 +28,10 @@ const NOTIFICATIONS = {
 // Lama minimal sebuah status tampil, supaya tool yang selesai dalam milidetik tetap terlihat.
 const MIN_VISIBLE_MS = 900;
 const LISTEN_MS = 1800;
+const BUBBLE_MS = 5000;
+// Batas aman: subagent yang sudah selesai melapor tidak tertahan di ruang rapat selamanya
+// (mis. saat halaman dibuka ulang lama setelah rapat). Lama rapat normal diatur tampilan.
+const MEETING_MAX_MS = 30000;
 
 const HAIRS = ['#161616', '#2a1a12', '#6b3a1e', '#c9a227', '#8a8a8a'];
 const FACES = ['smile', 'grin', 'stern', 'skeptic'];
@@ -67,6 +71,13 @@ function basename(p) {
   return String(p).split(/[\\/]/).filter(Boolean).pop() ?? '';
 }
 
+function firstLine(text, max = 90) {
+  const line = (String(text ?? '').split('\n').find((l) => l.trim()) ?? '')
+    .replace(/^[#>*\-\s]+/, '') // buang penanda markdown di awal baris
+    .replace(/[A-Za-z]:[\\/][^\s"'`]*|\/(?:[\w.-]+\/)+[\w.-]+/g, (p) => p.split(/[\\/]/).pop()); // path → nama file
+  return line.length > max ? line.slice(0, max - 1) + '…' : line;
+}
+
 function toolDetail(e) {
   const input = e.tool_input ?? {};
   if (input.subagent_type) return `→ ${styleFor(input.subagent_type).label}`;
@@ -89,6 +100,12 @@ export function createTracker() {
         shownAt: 0,
         decayAt: null,
         alert: false,
+        // Lokasi yang dituju karakter: 'desk', 'meeting', atau 'pantry'.
+        place: key === 'main' ? 'desk' : 'pantry',
+        placeUntil: 0,
+        report: '', // isi laporan terakhir, ditampilkan saat tiba di ruang rapat
+        reportDone: false, // subagent sudah selesai dan boleh ke pantry setelah rapat
+        bubble: null,
       });
     }
     return agents.get(key);
@@ -101,6 +118,10 @@ export function createTracker() {
     agent.detail = detail ?? '';
     agent.shownAt = now;
     agent.decayAt = null;
+  }
+
+  function say(agent, text, now) {
+    if (text) agent.bubble = { text: firstLine(text), until: now + BUBBLE_MS };
   }
 
   // Mengembalikan kalimat untuk panel aktivitas, atau null bila event diabaikan.
@@ -116,7 +137,10 @@ export function createTracker() {
         return 'Kantor dibuka, PM siap menerima perintah';
 
       case 'SessionEnd':
-        for (const a of agents.values()) show(a, a.key === 'main' ? 'waiting' : 'asleep', '', now);
+        for (const a of agents.values()) {
+          show(a, a.key === 'main' ? 'waiting' : 'asleep', '', now);
+          if (a.key !== 'main') a.place = 'pantry';
+        }
         return 'Kantor tutup';
 
       case 'UserPromptSubmit': {
@@ -124,6 +148,7 @@ export function createTracker() {
         agent.alert = false;
         show(agent, 'listening', isReport ? 'laporan masuk' : 'perintah baru', now);
         agent.decayAt = now + LISTEN_MS;
+        if (!isReport) say(agent, e.prompt, now);
         return isReport ? 'PM menerima laporan' : 'PM menerima perintah baru';
       }
 
@@ -131,20 +156,40 @@ export function createTracker() {
         const status = toolStatus(e.tool_name);
         const detail = toolDetail(e);
         show(agent, status, detail, now);
-        if (status === 'delegating' && e.tool_input?.subagent_type) get(e.tool_input.subagent_type);
+        if (status === 'delegating' && e.tool_input?.subagent_type) {
+          get(e.tool_input.subagent_type);
+          say(agent, e.tool_input.description, now);
+        }
+        if (agent.key !== 'main') {
+          if (status === 'reporting') {
+            agent.place = 'meeting';
+            agent.reportDone = false;
+            agent.report = firstLine(e.tool_input?.message) || 'Laporan siap!';
+          } else {
+            agent.place = 'desk';
+          }
+        }
         return `${name} ${STATUS[status].text.toLowerCase()} ${detail}`.trim();
       }
 
       case 'PostToolUse':
+        if (agent.status === 'reporting') return null; // tetap melapor sampai SubagentStop
         agent.decayAt = Math.max(now, agent.shownAt + MIN_VISIBLE_MS);
         return null;
 
       case 'SubagentStart':
         show(agent, 'thinking', '', now);
+        agent.place = 'desk';
         return `${name} mulai bekerja`;
 
       case 'SubagentStop':
         show(agent, 'asleep', '', now);
+        if (agent.place === 'meeting') {
+          agent.reportDone = true;
+          agent.placeUntil = now + MEETING_MAX_MS;
+        } else {
+          agent.place = 'pantry';
+        }
         return `${name} selesai`;
 
       case 'Stop':
@@ -164,6 +209,8 @@ export function createTracker() {
   function tick(now) {
     for (const a of agents.values()) {
       if (a.decayAt !== null && now >= a.decayAt) show(a, 'thinking', '', now);
+      if (a.place === 'meeting' && a.reportDone && now >= a.placeUntil) a.place = 'pantry';
+      if (a.bubble && now >= a.bubble.until) a.bubble = null;
     }
   }
 

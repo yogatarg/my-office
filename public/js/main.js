@@ -19,7 +19,8 @@ function pushFeed(text, accent, time) {
 await document.fonts.load('800 130px Unbounded').catch(() => {});
 
 const tracker = createTracker();
-const office = createOffice(document.getElementById('stage'));
+const timerMode = new URLSearchParams(location.search).has('timer');
+const office = createOffice(document.getElementById('stage'), { maxDelta: timerMode ? 1 : 0.05 });
 
 function handle(event, now) {
   const text = tracker.apply(event, now);
@@ -50,7 +51,7 @@ connect();
 
 // ?timer memakai setTimeout, karena requestAnimationFrame berhenti di tab yang tersembunyi
 // (berguna untuk tangkapan layar otomatis).
-const nextFrame = new URLSearchParams(location.search).has('timer')
+const nextFrame = timerMode
   ? (cb) => setTimeout(cb, 16)
   : requestAnimationFrame;
 

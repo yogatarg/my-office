@@ -192,14 +192,22 @@ export function createMinifig(style, seed = 1) {
   paper.visible = false;
   armR.add(paper);
 
-  root.userData.joints = { legs, torso, head, armL, armR, paper };
-  root.userData.pose = { torso: 0, headX: 0, headY: 0, armLx: -1.15, armLz: 0.12, armRx: -1.15, armRz: -0.12 };
-  legs.forEach((l) => (l.rotation.x = -Math.PI / 2)); // semua karakter duduk
+  // Mug kopi yang dipegang saat beristirahat di pantry.
+  const mug = solid(new THREE.CylinderGeometry(0.13, 0.12, 0.26, 16), plastic('#efece6'));
+  mug.position.set(0, -0.98, 0.1);
+  mug.visible = false;
+  armR.add(mug);
+
+  // legs[0] di sisi -x adalah kaki kanan karakter.
+  root.userData.joints = { legR: legs[0], legL: legs[1], torso, head, armL, armR, paper, mug };
+  root.userData.pose = { torso: 0, headX: 0, headY: 0, armLx: -0.1, armLz: 0.1, armRx: -0.1, armRz: -0.1, legL: 0, legR: 0 };
   return root;
 }
 
-function targetPose(status, t) {
-  const p = { torso: 0.04, headX: 0, headY: 0, armLx: -1.15, armLz: 0.12, armRx: -1.15, armRz: -0.12, paper: false };
+const SEATED = -Math.PI / 2;
+
+function seatedPose(status, t) {
+  const p = { torso: 0.04, headX: 0, headY: 0, armLx: -1.15, armLz: 0.12, armRx: -1.15, armRz: -0.12, legL: SEATED, legR: SEATED };
   switch (status) {
     case 'asleep':
       Object.assign(p, { torso: 0.2, headX: 0.38 + Math.sin(t * 1.2) * 0.03, headY: 0.12, armLx: -0.55, armRx: -0.55 });
@@ -235,17 +243,32 @@ function targetPose(status, t) {
   return p;
 }
 
-// Menggerakkan sendi secara halus menuju pose milik status saat ini.
-export function poseMinifig(fig, status, t, dt) {
-  const { torso, head, armL, armR, paper } = fig.userData.joints;
+function standingPose(status, t) {
+  const p = { torso: 0, headX: 0, headY: Math.sin(t * 0.6) * 0.15, armLx: -0.08, armLz: 0.1, armRx: -0.08, armRz: -0.1, legL: 0, legR: 0 };
+  if (status === 'reporting') Object.assign(p, { armRx: -2.85, armRz: -0.25 + Math.sin(t * 7) * 0.22, headX: -0.1 });
+  if (status === 'asleep') Object.assign(p, { armRx: -1.0, armRz: 0.12, headX: 0.05, mug: true });
+  return p;
+}
+
+function walkingPose(phase) {
+  const s = Math.sin(phase) * 0.7;
+  return { torso: 0.03, headX: 0, headY: 0, armLx: s, armLz: 0.08, armRx: -s, armRz: -0.08, legL: -s, legR: s };
+}
+
+// motion: { sit: 0..1, walking: boolean, phase: sudut langkah }
+export function poseMinifig(fig, status, t, dt, motion) {
+  const { legL, legR, torso, head, armL, armR, paper, mug } = fig.userData.joints;
   const pose = fig.userData.pose;
-  const target = targetPose(status, t);
-  const k = 1 - Math.exp(-dt * 9);
+  const target = motion.walking ? walkingPose(motion.phase) : motion.sit > 0.5 ? seatedPose(status, t) : standingPose(status, t);
+  const k = 1 - Math.exp(-dt * (motion.walking ? 16 : 9));
   for (const key of Object.keys(pose)) pose[key] += (target[key] - pose[key]) * k;
 
   torso.rotation.x = pose.torso;
   head.rotation.set(pose.headX, pose.headY, 0);
   armL.rotation.set(pose.armLx, 0, pose.armLz);
   armR.rotation.set(pose.armRx, 0, pose.armRz);
-  paper.visible = target.paper;
+  legL.rotation.x = pose.legL;
+  legR.rotation.x = pose.legR;
+  paper.visible = Boolean(target.paper);
+  mug.visible = Boolean(target.mug);
 }

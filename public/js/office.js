@@ -4,9 +4,22 @@ import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { createMinifig, poseMinifig, plastic } from './minifig.js';
 import { STATUS } from './agents.js';
+import { createNav } from './nav.js';
 
 const FLOOR = { w: 28, d: 20 };
 const SEAT_HEIGHT = 1.34; // tinggi sendi pinggul saat duduk di kursi
+const STAND_HEIGHT = 1.11; // tinggi sendi pinggul saat berdiri
+const WALK_SPEED = 3.6; // satuan per detik
+const MEETING_MS = 4500; // lama berdiri melapor di ruang rapat, dihitung sejak tiba
+
+const CHATTER = [
+  'Kopi dulu ☕',
+  'Build-nya hijau semua 🎉',
+  'Siapa yang push hari Jumat?',
+  'Nanti rapat jam berapa?',
+  'Bug kemarin sudah beres 👍',
+  'Nunggu tugas dari PM nih',
+];
 
 const mats = {
   floor: plastic('#cfcecd', { roughness: 0.55 }),
@@ -109,6 +122,7 @@ function createDesk(width = 2.6) {
 }
 
 function buildMeetingRoom(scene) {
+  const chairs = [];
   const room = new THREE.Group();
   room.position.set(9.5, 0, -5);
   room.add(solid(new THREE.BoxGeometry(6.4, 0.06, 6.4), mats.rug, 0, 0.03, 0));
@@ -120,32 +134,38 @@ function buildMeetingRoom(scene) {
     chair.position.set(Math.sin(a) * 2.4, 0, Math.cos(a) * 2.4);
     chair.rotation.y = a + Math.PI;
     room.add(chair);
+    chairs.push(chair);
   }
   // Papan tulis di dinding belakang.
   room.add(solid(rbox(4.2, 2.2, 0.14, 0.04), mats.white, 0, 3.6, -3.9));
   room.add(solid(new THREE.BoxGeometry(4.4, 0.12, 0.3), mats.frame, 0, 2.45, -3.85));
   scene.add(room);
+  return { center: [room.position.x, room.position.z], chairs };
 }
 
+// Pantry: titik asal grup = meja bundar. Konter berada di belakang (sisi -z)
+// supaya tidak menutupi karakter yang beristirahat dari sudut kamera.
 function buildPantry(scene) {
   const p = new THREE.Group();
-  p.position.set(10, 0, 5.5);
-  p.add(solid(rbox(5, 1.9, 1.4), mats.white, 0, 0.95, 1.6));
-  p.add(solid(rbox(5.1, 0.14, 1.5, 0.03), mats.wood, 0, 1.97, 1.6));
+  p.position.set(10, 0, 4.8);
+  const counter = solid(rbox(5, 1.9, 1.4), mats.white, 0, 0.95, -3.5);
+  p.add(counter);
+  p.add(solid(rbox(5.1, 0.14, 1.5, 0.03), mats.wood, 0, 1.97, -3.5));
   // Mesin kopi
-  p.add(solid(rbox(0.9, 1.1, 0.8), mats.black, -1.4, 2.6, 1.7));
-  p.add(solid(new THREE.CylinderGeometry(0.14, 0.12, 0.24, 14), mats.yellow, -1.4, 2.16, 1.25));
+  p.add(solid(rbox(0.9, 1.1, 0.8), mats.black, -1.4, 2.6, -3.6));
+  p.add(solid(new THREE.CylinderGeometry(0.14, 0.12, 0.24, 14), mats.yellow, -1.4, 2.16, -3.05));
   // Dispenser air
-  p.add(solid(rbox(0.8, 1.6, 0.8), mats.white, 1.6, 2.85, 1.7));
-  p.add(solid(new THREE.CylinderGeometry(0.34, 0.34, 0.7, 20), new THREE.MeshPhysicalMaterial({ color: '#7cc4ff', transparent: true, opacity: 0.6, roughness: 0.05 }), 1.6, 4.0, 1.7));
-  // Tanaman
-  p.add(solid(new THREE.CylinderGeometry(0.45, 0.35, 0.8, 18), mats.frame, -3.4, 0.4, -1.8));
+  p.add(solid(rbox(0.8, 1.6, 0.8), mats.white, 1.6, 2.85, -3.6));
+  p.add(solid(new THREE.CylinderGeometry(0.34, 0.34, 0.7, 20), new THREE.MeshPhysicalMaterial({ color: '#7cc4ff', transparent: true, opacity: 0.6, roughness: 0.05 }), 1.6, 4.0, -3.6));
+  // Tanaman di ujung konter
+  p.add(solid(new THREE.CylinderGeometry(0.45, 0.35, 0.8, 18), mats.frame, -3.6, 0.4, -3.4));
   [[0, 1.2, 0, 0.55], [0.25, 1.75, 0.1, 0.42], [-0.2, 1.65, -0.15, 0.4], [0.05, 2.15, 0, 0.32]].forEach(([x, y, z, r]) =>
-    p.add(solid(new THREE.SphereGeometry(r, 16, 12), mats.green, -3.4 + x, y, -1.8 + z)));
+    p.add(solid(new THREE.SphereGeometry(r, 16, 12), mats.green, -3.6 + x, y, -3.4 + z)));
   // Meja bundar kecil
-  p.add(solid(new THREE.CylinderGeometry(0.9, 0.9, 0.12, 28), mats.wood, 0, 1.6, -1.6));
-  p.add(solid(new THREE.CylinderGeometry(0.1, 0.25, 1.55, 12), mats.frame, 0, 0.78, -1.6));
+  p.add(solid(new THREE.CylinderGeometry(0.9, 0.9, 0.12, 28), mats.wood, 0, 1.6, 0));
+  p.add(solid(new THREE.CylinderGeometry(0.1, 0.25, 1.55, 12), mats.frame, 0, 0.78, 0));
   scene.add(p);
+  return { counter, table: [p.position.x, p.position.z], plant: [p.position.x - 3.6, p.position.z - 3.4] };
 }
 
 function zoneSign(scene, text, x, z) {
@@ -160,13 +180,14 @@ function zoneSign(scene, text, x, z) {
 function createLabel(style) {
   const el = document.createElement('div');
   el.className = 'tag';
-  el.innerHTML = '<span class="bang">!</span><span class="zz">z<i>z</i></span><span class="role"></span><span class="state"></span><span class="detail"></span>';
+  el.innerHTML = '<span class="bubble"><i></i></span><span class="bang">!</span><span class="zz">z<i>z</i></span><span class="role"></span><span class="state"></span><span class="detail"></span>';
   el.querySelector('.role').textContent = style.label;
   el.style.setProperty('--accent', style.accent);
   return el;
 }
 
-export function createOffice(container) {
+// maxDelta membatasi langkah waktu per frame agar animasi tidak melompat setelah tab tertunda.
+export function createOffice(container, { maxDelta = 0.05 } = {}) {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('#b8b7b8');
   scene.userData = { wallZ: -FLOOR.d / 2 + 0.5, wallX: -FLOOR.w / 2 + 0.5 };
@@ -184,7 +205,7 @@ export function createOffice(container) {
   container.appendChild(labels.domElement);
 
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 200);
-  const focus = new THREE.Vector3(0, 1.5, -1);
+  const focus = new THREE.Vector3(2, 1.5, 0);
   camera.position.copy(focus).add(new THREE.Vector3(17, 19, 24));
 
   const controls = new OrbitControls(camera, renderer.domElement);
@@ -211,10 +232,10 @@ export function createOffice(container) {
   buildFloor(scene);
   buildWall(scene, { from: -FLOOR.w / 2, to: FLOOR.w / 2, courses: 2, axis: 'x' });
   buildWall(scene, { from: -FLOOR.d / 2 + 1, to: FLOOR.d / 2, courses: 2, axis: 'z' });
-  buildMeetingRoom(scene);
-  buildPantry(scene);
+  const meeting = buildMeetingRoom(scene);
+  const pantry = buildPantry(scene);
   zoneSign(scene, 'Ruang Rapat', 9.5, -1.4);
-  zoneSign(scene, 'Pantry', 10, 2.6);
+  zoneSign(scene, 'Pantry', 10, 7.9);
 
   // PM di pojok belakang. Tim duduk di satu blok meja: baris A menghadap +x (wajah terlihat
   // kamera), baris B di seberangnya menghadap -x, punggung meja saling menempel.
@@ -236,16 +257,72 @@ export function createOffice(container) {
   const desks = new Map();
   const spares = [];
 
+  let nav = null;
+  const box = new THREE.Box3();
+  const blockObject = (obj) => {
+    obj.updateMatrixWorld(true);
+    nav.blockBox(box.setFromObject(obj));
+  };
+
   function placeDesk([x, z, width, facing]) {
     const desk = createDesk(width);
     desk.group.position.set(x, 0, z);
     desk.group.rotation.y = (facing * Math.PI) / 2;
     scene.add(desk.group);
+    if (nav) blockObject(desk.group); // meja tambahan yang dibuat setelah navigasi siap
     return desk;
   }
 
   for (const [key, spot] of Object.entries(layout)) desks.set(key, placeDesk(spot));
   for (let i = 0; i < 3; i++) spares.push(placeDesk(spareSpot(i)));
+
+  // --- Navigasi: tandai semua perabot sebagai rintangan ---
+  scene.updateMatrixWorld(true);
+  nav = createNav(FLOOR.w, FLOOR.d);
+  nav.blockWhere((x, z) => x < -12.6 || z < -8.6 || x > FLOOR.w / 2 - 0.4 || z > FLOOR.d / 2 - 0.4);
+  for (const desk of [...desks.values(), ...spares]) blockObject(desk.group);
+  nav.blockCircle(...meeting.center, 1.7);
+  meeting.chairs.forEach(blockObject);
+  blockObject(pantry.counter);
+  nav.blockCircle(...pantry.table, 0.9);
+  nav.blockCircle(...pantry.plant, 0.6);
+
+  // Tempat berdiri: mengelilingi meja rapat dan meja bundar pantry, menghadap ke tengah.
+  function ring([cx, cz], radius, angles) {
+    return angles.map((a) => {
+      const x = cx + Math.sin(a) * radius;
+      const z = cz + Math.cos(a) * radius;
+      return { x, z, yaw: Math.atan2(cx - x, cz - z), owner: null };
+    });
+  }
+  const quarter = [0, 1, 2, 3].map((i) => (i * Math.PI) / 2);
+  const spots = {
+    meeting: [...ring(meeting.center, 2.75, quarter), ...ring(meeting.center, 3.6, quarter.map((a) => a + Math.PI / 4))],
+    // Urutan sudut berselang-seling supaya beberapa karakter pertama tersebar merata.
+    pantry: ring(pantry.table, 1.9, [0, 2, 4, 1, 3, 5].map((i) => (i * Math.PI) / 3 + Math.PI / 6)),
+  };
+
+  function claimSpot(place, worker) {
+    release(worker);
+    const list = spots[place];
+    const spot = list.find((s) => !s.owner) ?? list[workers.size % list.length];
+    spot.owner = worker;
+    worker.spot = spot;
+    return spot;
+  }
+
+  function release(worker) {
+    if (worker.spot?.owner === worker) worker.spot.owner = null;
+    worker.spot = null;
+  }
+
+  const seatOf = (desk) => ({ x: desk.group.position.x, z: desk.group.position.z, yaw: desk.group.rotation.y, sit: 1 });
+  // Titik berdiri di belakang kursi, tempat karakter mulai duduk atau selesai berdiri.
+  const accessOf = (desk) => {
+    const v = desk.group.localToWorld(new THREE.Vector3(0, 0, -1.7));
+    return { x: v.x, z: v.z, yaw: desk.group.rotation.y, sit: 0 };
+  };
+  const stateOf = (w) => ({ x: w.x, z: w.z, yaw: w.yaw, sit: w.sit });
 
   const workers = new Map();
 
@@ -261,21 +338,124 @@ export function createOffice(container) {
     if (workers.has(agent.key)) return workers.get(agent.key);
     const desk = deskFor(agent.key);
     const fig = createMinifig(agent.style, workers.size + 3);
-    fig.position.y = SEAT_HEIGHT;
-    desk.group.add(fig);
+    scene.add(fig);
 
     const el = createLabel(agent.style);
     const label = new CSS2DObject(el);
     label.position.y = 2.85;
     fig.add(label);
 
-    // Karakter baru "dijatuhkan" ke kursinya seperti balok yang dipasang.
-    const worker = { fig, desk, el, drop: 6, vel: 0, last: '' };
+    // Karakter baru "dijatuhkan" langsung di tempatnya seperti balok yang dipasang.
+    const worker = { fig, desk, el, drop: 6, vel: 0, last: '', steps: [], phase: 0, walking: false, spot: null, chatter: null, say: null, meetingUntil: 0 };
+    const start = agent.place === 'desk' ? seatOf(desk) : claimSpot(agent.place, worker);
+    Object.assign(worker, { x: start.x, z: start.z, yaw: start.yaw, sit: agent.place === 'desk' ? 1 : 0, goal: agent.place });
     workers.set(agent.key, worker);
     return worker;
   }
 
+  function plan(worker, place) {
+    worker.goal = place;
+    // Transisi duduk/berdiri yang sedang berjalan diselesaikan dulu agar gerakan tidak patah.
+    const keep = worker.steps[0]?.kind === 'tween' ? [worker.steps[0]] : [];
+    worker.steps = keep;
+    let from = keep.length ? keep[0].to : stateOf(worker);
+
+    if (from.sit > 0.5) {
+      const up = accessOf(worker.desk);
+      worker.steps.push({ kind: 'tween', to: up, dur: 0.45 });
+      from = up;
+    }
+
+    const target = place === 'desk' ? accessOf(worker.desk) : claimSpot(place, worker);
+    if (place === 'desk') release(worker);
+    if (Math.hypot(target.x - from.x, target.z - from.z) > 0.05) {
+      worker.steps.push({ kind: 'walk', points: nav.path([from.x, from.z], [target.x, target.z]) });
+    }
+    worker.steps.push(place === 'desk' ? { kind: 'tween', to: seatOf(worker.desk), dur: 0.45 } : { kind: 'turn', yaw: target.yaw });
+  }
+
+  const angleDiff = (a, b) => Math.atan2(Math.sin(b - a), Math.cos(b - a));
+  const ease = (t) => t * t * (3 - 2 * t);
+
+  function advance(worker, dt) {
+    worker.walking = false;
+    const step = worker.steps[0];
+    if (!step) return;
+
+    if (step.kind === 'tween') {
+      step.from ??= stateOf(worker);
+      step.t = Math.min(1, (step.t ?? 0) + dt / step.dur);
+      const k = ease(step.t);
+      worker.x = step.from.x + (step.to.x - step.from.x) * k;
+      worker.z = step.from.z + (step.to.z - step.from.z) * k;
+      worker.yaw = step.from.yaw + angleDiff(step.from.yaw, step.to.yaw) * k;
+      worker.sit = step.from.sit + (step.to.sit - step.from.sit) * k;
+      if (step.t >= 1) worker.steps.shift();
+    } else if (step.kind === 'walk') {
+      let budget = WALK_SPEED * dt;
+      let heading = worker.yaw;
+      while (budget > 0 && step.points.length) {
+        const [tx, tz] = step.points[0];
+        const dx = tx - worker.x;
+        const dz = tz - worker.z;
+        const d = Math.hypot(dx, dz);
+        if (d > 1e-3) heading = Math.atan2(dx, dz);
+        if (d <= budget) {
+          worker.x = tx;
+          worker.z = tz;
+          budget -= d;
+          step.points.shift();
+        } else {
+          worker.x += (dx / d) * budget;
+          worker.z += (dz / d) * budget;
+          budget = 0;
+        }
+      }
+      worker.yaw += angleDiff(worker.yaw, heading) * (1 - Math.exp(-dt * 12));
+      worker.walking = true;
+      worker.phase += dt * 11;
+      if (!step.points.length) worker.steps.shift();
+    } else if (step.kind === 'turn') {
+      worker.yaw += angleDiff(worker.yaw, step.yaw) * (1 - Math.exp(-dt * 10));
+      if (Math.abs(angleDiff(worker.yaw, step.yaw)) < 0.02) worker.steps.shift();
+    }
+  }
+
+  // Tempat yang dituju tampilan. Rapat dihitung sejak karakter tiba di ruang rapat,
+  // karena perjalanan dari meja bisa lebih lama daripada jeda antar event.
+  function effectivePlace(worker, agent, now) {
+    if (agent.place !== 'meeting') {
+      worker.meetingUntil = 0;
+      return agent.place;
+    }
+    const arrived = worker.goal === 'meeting' && !worker.steps.length;
+    if (arrived && !worker.meetingUntil) {
+      worker.meetingUntil = now + MEETING_MS;
+      worker.say = { text: agent.report, until: worker.meetingUntil };
+    }
+    return agent.reportDone && worker.meetingUntil && now >= worker.meetingUntil ? 'pantry' : 'meeting';
+  }
+
+  function bubbleText(worker, agent, now, dt) {
+    if (agent.bubble) return agent.bubble.text;
+    if (worker.say && now < worker.say.until) return worker.say.text;
+    // Obrolan ringan sesekali saat beristirahat di pantry.
+    const idle = worker.goal === 'pantry' && agent.status === 'asleep' && !worker.steps.length;
+    if (worker.chatter && (now > worker.chatter.until || !idle)) worker.chatter = null;
+    if (!worker.chatter && idle && Math.random() < dt / 20) {
+      worker.chatter = { text: CHATTER[Math.floor(Math.random() * CHATTER.length)], until: now + 4000 };
+    }
+    return worker.chatter?.text ?? '';
+  }
+
   function syncWorker(worker, agent, t, dt) {
+    const now = Date.now();
+    const place = effectivePlace(worker, agent, now);
+    if (place !== worker.goal) plan(worker, place);
+    // Selama di ruang rapat karakter tetap tampil melapor walau subagent sudah berhenti.
+    const status = place === 'meeting' ? 'reporting' : agent.status;
+    advance(worker, dt);
+
     if (worker.drop !== 0) {
       worker.vel -= 40 * dt;
       worker.drop += worker.vel * dt;
@@ -284,23 +464,30 @@ export function createOffice(container) {
         worker.vel = Math.abs(worker.vel) > 3 ? -worker.vel * 0.3 : 0;
         if (worker.vel > 0) worker.drop = 0.0001;
       }
-      worker.fig.position.y = SEAT_HEIGHT + worker.drop;
     }
+    const bob = worker.walking ? Math.abs(Math.sin(worker.phase)) * 0.08 : 0;
+    const base = STAND_HEIGHT + (SEAT_HEIGHT - STAND_HEIGHT) * worker.sit;
+    worker.fig.position.set(worker.x, base + worker.drop + bob, worker.z);
+    worker.fig.rotation.y = worker.yaw;
 
-    poseMinifig(worker.fig, agent.status, t, dt);
+    poseMinifig(worker.fig, status, t, dt, { sit: worker.sit, walking: worker.walking, phase: worker.phase });
 
-    const color = STATUS[agent.status].color;
-    const on = agent.status !== 'asleep';
+    const color = STATUS[status].color;
+    const on = status !== 'asleep';
     worker.desk.lampMat.color.set(on ? color : '#444');
     worker.desk.lampMat.emissive.set(on ? color : '#000');
     worker.desk.screenMat.emissive.set(on ? color : '#000').multiplyScalar(on ? 0.6 : 0);
 
-    const signature = `${agent.status}|${agent.detail}|${agent.alert}`;
+    const bubble = bubbleText(worker, agent, now, dt);
+    const signature = `${status}|${agent.detail}|${agent.alert}|${place}|${bubble}`;
     if (signature !== worker.last) {
       worker.last = signature;
-      worker.el.querySelector('.state').textContent = STATUS[agent.status].text;
+      worker.el.querySelector('.state').textContent = STATUS[status].text;
       worker.el.querySelector('.detail').textContent = agent.detail;
-      worker.el.dataset.status = agent.status;
+      worker.el.querySelector('.bubble i').textContent = bubble;
+      worker.el.classList.toggle('talking', Boolean(bubble));
+      worker.el.dataset.status = status;
+      worker.el.dataset.place = place;
       worker.el.classList.toggle('alert', agent.alert);
     }
   }
@@ -321,7 +508,7 @@ export function createOffice(container) {
   const timer = new THREE.Timer();
   function render(agents) {
     timer.update();
-    const dt = Math.min(timer.getDelta(), 0.05);
+    const dt = Math.min(timer.getDelta(), maxDelta);
     const t = timer.getElapsed();
     for (const agent of agents.values()) syncWorker(ensureWorker(agent), agent, t, dt);
     controls.update();

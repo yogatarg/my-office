@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pixel Office — Event Log</title>
+  <style>
+    :root { color-scheme: dark; --bg: #111318; --panel: #1a1d24; --muted: #8b93a7; --line: #2a2f3a; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 13px/1.5 ui-monospace, Consolas, monospace; background: var(--bg); color: #e6e9ef; }
+    header { display: flex; gap: 12px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--bg); }
+    h1 { font-size: 14px; margin: 0; }
+    #status { color: var(--muted); }
+    #status.on { color: #6ee7a8; }
+    button { margin-left: auto; background: var(--panel); color: inherit; border: 1px solid var(--line); padding: 4px 10px; cursor: pointer; }
+    ul { list-style: none; margin: 0; padding: 8px 16px; }
+    li { border-bottom: 1px solid var(--line); padding: 6px 0; }
+    .row { display: flex; gap: 10px; cursor: pointer; }
+    .time { color: var(--muted); }
+    .name { font-weight: 600; min-width: 150px; }
+    .agent { color: #f5c76b; }
+    .detail { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    pre { display: none; background: var(--panel); padding: 8px; overflow-x: auto; margin: 6px 0 0; }
+    li.open pre { display: block; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Pixel Office · Event Log</h1>
+    <span id="status">menghubungkan…</span>
+    <button id="clear">Bersihkan</button>
+  </header>
+  <ul id="log"></ul>
+
+  <script>
+    const log = document.getElementById('log');
+    const status = document.getElementById('status');
+
+    // Tahap 1: belum ada grafis, hanya memastikan data setiap hook terbaca.
+    function describe(e) {
+      const tool = e.tool_name ? `${e.tool_name}` : '';
+      const input = e.tool_input ?? {};
+      const target = input.file_path ?? input.command ?? input.pattern ?? input.description ?? input.prompt ?? e.prompt ?? e.message ?? '';
+      return [tool, String(target).slice(0, 160)].filter(Boolean).join(' · ');
+    }
+
+    function agentLabel(e) {
+      // Cari tanda subagent di payload; nama field dikonfirmasi lewat logs/events.jsonl.
+      const id = e.agent_type ?? e.subagent_type ?? e.agent_id ?? e.tool_input?.subagent_type;
+      return id ? `[${id}]` : `[utama ${String(e.session_id ?? '').slice(0, 6)}]`;
+    }
+
+    function render(e) {
+      const li = document.createElement('li');
+      const time = new Date(e.received_at).toLocaleTimeString('id-ID');
+      li.innerHTML = `<div class="row"><span class="time"></span><span class="name"></span><span class="agent"></span><span class="detail"></span></div><pre></pre>`;
+      li.querySelector('.time').textContent = time;
+      li.querySelector('.name').textContent = e.hook_event_name ?? '(tanpa nama)';
+      li.querySelector('.agent').textContent = agentLabel(e);
+      li.querySelector('.detail').textContent = describe(e);
+      li.querySelector('pre').textContent = JSON.stringify(e, null, 2);
+      li.querySelector('.row').onclick = () => li.classList.toggle('open');
+      log.prepend(li);
+    }
+
+    function connect() {
+      const ws = new WebSocket(`ws://${location.host}/ws`);
+      ws.onopen = () => { status.textContent = 'terhubung'; status.className = 'on'; };
+      ws.onclose = () => { status.textContent = 'terputus, mencoba lagi…'; status.className = ''; setTimeout(connect, 1500); };
+      ws.onmessage = ({ data }) => {
+        const msg = JSON.parse(data);
+        if (msg.type === 'history') { log.innerHTML = ''; msg.events.forEach(render); }
+        if (msg.type === 'event') render(msg.event);
+      };
+    }
+
+    document.getElementById('clear').onclick = () => (log.innerHTML = '');
+    connect();
+  </script>
+</body>
+</html>

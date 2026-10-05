@@ -1,0 +1,81 @@
+{"received_at":"2026-10-05T17:15:10.721Z","hook_event_name":"SessionStart","session_id":"sample-session"}
+{"received_at":"2026-10-05T17:16:10.981Z","hook_event_name":"UserPromptSubmit","session_id":"sample-session","prompt":"Buat aplikasi to-do list sederhana dalam satu file HTML. Pakai subagent frontend untuk tampilannya dan subagent backend untuk logika penyimpanan di localStorage. Setelah selesai, minta subagent qa mem"}
+{"received_at":"2026-10-05T17:16:18.462Z","hook_event_name":"PreToolUse","session_id":"sample-session","tool_name":"Bash","tool_input":{"command":"ls -la /c/laragon/www/pixel-office/playground"}}
+{"received_at":"2026-10-05T17:16:20.423Z","hook_event_name":"PostToolUse","session_id":"sample-session","tool_name":"Bash","tool_input":{"command":"ls -la /c/laragon/www/pixel-office/playground"}}
+{"received_at":"2026-10-05T17:16:33.930Z","hook_event_name":"PreToolUse","session_id":"sample-session","tool_name":"Agent","tool_input":{"subagent_type":"backend"}}
+{"received_at":"2026-10-05T17:16:43.554Z","hook_event_name":"PreToolUse","session_id":"sample-session","tool_name":"Agent","tool_input":{"subagent_type":"frontend"}}
+{"received_at":"2026-10-05T17:16:43.979Z","hook_event_name":"PostToolUse","session_id":"sample-session","tool_name":"Agent","tool_input":{"subagent_type":"backend"}}
+{"received_at":"2026-10-05T17:16:43.980Z","hook_event_name":"SubagentStart","session_id":"sample-session","agent_id":"a4ffd662667a45c72","agent_type":"backend"}
+{"received_at":"2026-10-05T17:16:43.995Z","hook_event_name":"SubagentStart","session_id":"sample-session","agent_id":"a357440f635cd125d","agent_type":"frontend"}
+{"received_at":"2026-10-05T17:16:43.996Z","hook_event_name":"PostToolUse","session_id":"sample-session","tool_name":"Agent","tool_input":{"subagent_type":"frontend"}}
+{"received_at":"2026-10-05T17:16:47.661Z","hook_event_name":"Stop","session_id":"sample-session"}
+{"received_at":"2026-10-05T17:16:49.807Z","hook_event_name":"SubagentStop","session_id":"sample-session","agent_id":"a8c5e1941d7e8d151","agent_type":""}
+{"received_at":"2026-10-05T17:16:59.630Z","hook_event_name":"PreToolUse","session_id":"sample-session","agent_id":"a4ffd662667a45c72","agent_type":"backend","tool_name":"Write","tool_input":{"file_path":"store.js"}}
+{"received_at":"2026-10-05T17:16:59.829Z","hook_event_name":"PostToolUse","session_id":"sample-session","agent_id":"a4ffd662667a45c72","agent_type":"backend","tool_name":"Write","tool_input":{"file_path":"store.js"}}
+{"received_at":"2026-10-05T17:17:13.235Z","hook_event_name":"PreToolUse","session_id":"sample-session","agent_id":"a4ffd662667a45c72","agent_type":"backend","tool_name":"Bash","tool_input":{"command":"cd \"…/scratchpad\" && node --check store.js && echo SYNTAX_OK && cat > test-store"}}
+{"received_at":"2026-10-05T17:17:14.362Z","hook_event_name":"PostToolUse","session_id":"sample-session","agent_id":"a4ffd662667a45c72","agent_type":"backend","tool_name":"Bash","tool_input":{"command":"cd \"…/scratchpad\" && node --check store.js && echo SYNTAX_OK && cat > test-store"}}
+{"received_at":"2026-10-05T17:17:15.840Z","hook_event_name":"SubagentStop","session_id":"sample-session","agent_id":"ae4bfd151f54e106f","agent_type":""}
+{"received_at":"2026-10-05T17:17:15.983Z","hook_event_name":"SubagentStop","session_id":"sample-session","agent_id":"a7f0aedc4eb686ef6","agent_type":""}
+{"received_at":"2026-10-05T17:17:23.464Z","hook_event_name":"PreToolUse","session_id":"sample-session","agent_id":"a4ffd662667a45c72","agent_type":"backend","tool_name":"SubagentHandback","tool_input":{}}
+{"received_at":"2026-10-05T17:17:23.894Z","hook_event_name":"PostToolUse","session_id":"sample-session","agent_id":"a4ffd662667a45c72","agent_type":"backend","tool_name":"SubagentHandback","tool_input":{}}
+{"received_at":"2026-10-05T17:17:23.941Z","hook_event_name":"UserPromptSubmit","session_id":"sample-session","prompt":"<agent-message> (laporan subagent)"}
+{"received_at":"2026-10-05T17:17:24.137Z","hook_event_name":"SubagentStop","session_id":"sample-session","agent_id":"a4ffd662667a45c72","agent_type":"backend"}
+{"received_at":"2026-10-05T17:17:27.966Z","hook_event_name":"Stop","session_id":"sample-session"}
+{"received_at":"2026-10-05T17:17:29.721Z","hook_event_name":"SubagentStop","session_id":"sample-session","agent_id":"a3f34bb5552d71d74","agent_type":""}
+{"received_at":"2026-10-05T17:17:39.480Z","hook_event_name":"PreToolUse","session_id":"sample-session","agent_id":"a357440f635cd125d","agent_type":"frontend","tool_name":"Write","tool_input":{"file_path":"todo.html"}}
+{"received_at":"2026-10-05T17:17:39.724Z","hook_event_name":"PostToolUse","session_id":"sample-session","agent_id":"a357440f635cd125d","agent_type":"frontend","tool_name":"Write","tool_input":{"file_path":"todo.html"}}
+{"received_at":"2026-10-05T17:17:41.592Z","hook_event_name":"PreToolUse","session_id":"sample-session","agent_id":"a357440f635cd125d","agent_type":"frontend","tool_name":"Grep","tool_input":{"pattern":"__TODO_STORE__|localStorage|innerHTML"}}
+{"received_at":"2026-10-05T17:17:41.854Z","hook_event_name":"PostToolUse","session_id":"sample-session","agent_id":"a357440f635cd125d","agent_type":"frontend","tool_name":"Grep","tool_input":{"pattern":"__TODO_STORE__|localStorage|innerHTML"}}
+{"received_at":"2026-10-05T17:17:47.233Z","hook_event_name":"SubagentStop","session_id":"sample-session","agent_id":"a90335d80c34792d3","agent_type":""}
+{"received_at":"2026-10-05T17:17:54.002Z","hook_event_name":"PreToolUse","session_id":"sample-session","agent_id":"a357440f635cd125d","agent_type":"frontend","tool_name":"SubagentHandback","tool_input":{}}
+{"received_at":"2026-10-05T17:17:54.420Z","hook_event_name":"PostToolUse","session_id":"sample-session","agent_id":"a357440f635cd125d","agent_type":"frontend","tool_name":"SubagentHandback","tool_input":{}}
+{"received_at":"2026-10-05T17:17:54.461Z","hook_event_name":"UserPromptSubmit","session_id":"sample-session","prompt":"<agent-message> (laporan subagent)"}
+{"received_at":"2026-10-05T17:17:54.655Z","hook_event_name":"SubagentStop","session_id":"sample-session","agent_id":"a357440f635cd125d","agent_type":"frontend"}
+{"received_at":"2026-10-05T17:17:58.800Z","hook_event_name":"PreToolUse","session_id":"sample-session","tool_name":"Bash","tool_input":{"command":"S=\"…/store.js\" && grep -c '__TODO_STORE__' todo.html && grep -n '</script' \"$S\";"}}
+{"received_at":"2026-10-05T17:18:00.171Z","hook_event_name":"PostToolUse","session_id":"sample-session","tool_name":"Bash","tool_input":{"command":"S=\"…/store.js\" && grep -c '__TODO_STORE__' todo.html && grep -n '</script' \"$S\";"}}
+{"received_at":"2026-10-05T17:18:11.858Z","hook_event_name":"PreToolUse","session_id":"sample-session","tool_name":"Agent","tool_input":{"subagent_type":"qa"}}
+{"received_at":"2026-10-05T17:18:12.308Z","hook_event_name":"PostToolUse","session_id":"sample-session","tool_name":"Agent","tool_input":{"subagent_type":"qa"}}
+{"received_at":"2026-10-05T17:18:12.309Z","hook_event_name":"SubagentStart","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa"}
+{"received_at":"2026-10-05T17:18:14.733Z","hook_event_name":"PreToolUse","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa","tool_name":"Read","tool_input":{"file_path":"todo.html"}}
+{"received_at":"2026-10-05T17:18:14.939Z","hook_event_name":"PostToolUse","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa","tool_name":"Read","tool_input":{"file_path":"todo.html"}}
+{"received_at":"2026-10-05T17:18:16.199Z","hook_event_name":"Stop","session_id":"sample-session"}
+{"received_at":"2026-10-05T17:18:45.111Z","hook_event_name":"SubagentStop","session_id":"sample-session","agent_id":"a86bd5a1242cf713f","agent_type":""}
+{"received_at":"2026-10-05T17:19:18.546Z","hook_event_name":"PreToolUse","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa","tool_name":"Bash","tool_input":{"command":"node --version; npm ls -g jsdom 2>&1 | head -5; node -e \"require('jsdom');consol"}}
+{"received_at":"2026-10-05T17:19:28.097Z","hook_event_name":"PostToolUse","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa","tool_name":"Bash","tool_input":{"command":"node --version; npm ls -g jsdom 2>&1 | head -5; node -e \"require('jsdom');consol"}}
+{"received_at":"2026-10-05T17:19:30.626Z","hook_event_name":"PreToolUse","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa","tool_name":"Bash","tool_input":{"command":"find \"…/node_modules\" -maxdepth 2 -name package.json -path \"*jsdom/package.json\""}}
+{"received_at":"2026-10-05T17:19:31.708Z","hook_event_name":"PostToolUse","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa","tool_name":"Bash","tool_input":{"command":"find \"…/node_modules\" -maxdepth 2 -name package.json -path \"*jsdom/package.json\""}}
+{"received_at":"2026-10-05T17:19:35.735Z","hook_event_name":"PreToolUse","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa","tool_name":"Bash","tool_input":{"command":"cd \"…/scratchpad\" && cat > extract.js <<'EOF'"}}
+{"received_at":"2026-10-05T17:19:36.679Z","hook_event_name":"PostToolUse","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa","tool_name":"Bash","tool_input":{"command":"cd \"…/scratchpad\" && cat > extract.js <<'EOF'"}}
+{"received_at":"2026-10-05T17:19:46.607Z","hook_event_name":"SubagentStop","session_id":"sample-session","agent_id":"a32f667d63e716f83","agent_type":""}
+{"received_at":"2026-10-05T17:20:06.976Z","hook_event_name":"UserPromptSubmit","session_id":"sample-session","prompt":"Status frontend gimana?"}
+{"received_at":"2026-10-05T17:20:09.693Z","hook_event_name":"PreToolUse","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa","tool_name":"Bash","tool_input":{"command":"cd \"…/scratchpad\" && cat > qa-test.js <<'EOF'"}}
+{"received_at":"2026-10-05T17:20:14.297Z","hook_event_name":"Stop","session_id":"sample-session"}
+{"received_at":"2026-10-05T17:20:14.317Z","hook_event_name":"PreToolUse","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa","tool_name":"Bash","tool_input":{"command":"cd \"…/scratchpad\" && ls -la qa-test.js 2>&1; tail -3 qa-test.js 2>&1"}}
+{"received_at":"2026-10-05T17:20:15.922Z","hook_event_name":"SubagentStop","session_id":"sample-session","agent_id":"ae20c35a026d224a3","agent_type":""}
+{"received_at":"2026-10-05T17:20:17.800Z","hook_event_name":"SubagentStop","session_id":"sample-session","agent_id":"a3817349014800811","agent_type":""}
+{"received_at":"2026-10-05T17:20:23.322Z","hook_event_name":"PreToolUse","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa","tool_name":"Bash","tool_input":{"command":"cd \"…/scratchpad\" && cat > qa-test.js <<'QAEND'"}}
+{"received_at":"2026-10-05T17:20:24.253Z","hook_event_name":"PostToolUse","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa","tool_name":"Bash","tool_input":{"command":"cd \"…/scratchpad\" && cat > qa-test.js <<'QAEND'"}}
+{"received_at":"2026-10-05T17:20:48.275Z","hook_event_name":"PreToolUse","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa","tool_name":"Bash","tool_input":{"command":"cd \"…/scratchpad\" && cat > qa-main.js <<'QAEND'"}}
+{"received_at":"2026-10-05T17:20:49.193Z","hook_event_name":"SubagentStop","session_id":"sample-session","agent_id":"a98e55e229273f8c3","agent_type":""}
+{"received_at":"2026-10-05T17:20:56.795Z","hook_event_name":"PreToolUse","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa","tool_name":"Bash","tool_input":{"command":"cd \"…/scratchpad\" && cat > p1.js <<'QAEND'"}}
+{"received_at":"2026-10-05T17:20:57.485Z","hook_event_name":"PostToolUse","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa","tool_name":"Bash","tool_input":{"command":"cd \"…/scratchpad\" && cat > p1.js <<'QAEND'"}}
+{"received_at":"2026-10-05T17:21:07.544Z","hook_event_name":"PreToolUse","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa","tool_name":"Bash","tool_input":{"command":"cd \"…/scratchpad\" && cat > p2.js <<'QAEND'"}}
+{"received_at":"2026-10-05T17:21:08.125Z","hook_event_name":"PostToolUse","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa","tool_name":"Bash","tool_input":{"command":"cd \"…/scratchpad\" && cat > p2.js <<'QAEND'"}}
+{"received_at":"2026-10-05T17:21:13.514Z","hook_event_name":"PreToolUse","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa","tool_name":"Bash","tool_input":{"command":"cd \"…/scratchpad\" && cat > p3.js <<'QAEND'"}}
+{"received_at":"2026-10-05T17:21:14.163Z","hook_event_name":"PostToolUse","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa","tool_name":"Bash","tool_input":{"command":"cd \"…/scratchpad\" && cat > p3.js <<'QAEND'"}}
+{"received_at":"2026-10-05T17:21:19.097Z","hook_event_name":"PreToolUse","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa","tool_name":"Bash","tool_input":{"command":"cd \"…/scratchpad\" && cat > p4.js <<'QAEND'"}}
+{"received_at":"2026-10-05T17:21:19.733Z","hook_event_name":"PostToolUse","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa","tool_name":"Bash","tool_input":{"command":"cd \"…/scratchpad\" && cat > p4.js <<'QAEND'"}}
+{"received_at":"2026-10-05T17:21:20.531Z","hook_event_name":"SubagentStop","session_id":"sample-session","agent_id":"a1249965cce951378","agent_type":""}
+{"received_at":"2026-10-05T17:21:29.555Z","hook_event_name":"PreToolUse","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa","tool_name":"Bash","tool_input":{"command":"cd \"…/scratchpad\" && cat > p5.js <<'QAEND'"}}
+{"received_at":"2026-10-05T17:21:45.060Z","hook_event_name":"PostToolUse","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa","tool_name":"Bash","tool_input":{"command":"cd \"…/scratchpad\" && cat > p5.js <<'QAEND'"}}
+{"received_at":"2026-10-05T17:21:51.835Z","hook_event_name":"SubagentStop","session_id":"sample-session","agent_id":"a3e5a1ddb54a7462d","agent_type":""}
+{"received_at":"2026-10-05T17:22:24.719Z","hook_event_name":"PreToolUse","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa","tool_name":"SubagentHandback","tool_input":{}}
+{"received_at":"2026-10-05T17:22:25.186Z","hook_event_name":"PostToolUse","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa","tool_name":"SubagentHandback","tool_input":{}}
+{"received_at":"2026-10-05T17:22:25.239Z","hook_event_name":"UserPromptSubmit","session_id":"sample-session","prompt":"<agent-message> (laporan subagent)"}
+{"received_at":"2026-10-05T17:22:25.424Z","hook_event_name":"SubagentStop","session_id":"sample-session","agent_id":"a5cc766d5b01e529a","agent_type":"qa"}
+{"received_at":"2026-10-05T17:22:35.393Z","hook_event_name":"Stop","session_id":"sample-session"}
+{"received_at":"2026-10-05T17:23:35.634Z","hook_event_name":"Notification","session_id":"sample-session","notification_type":"idle_prompt","message":"Claude is waiting for your input"}
+{"received_at":"2026-10-05T17:25:36.749Z","hook_event_name":"UserPromptSubmit","session_id":"sample-session","prompt":"status qa gimana?"}
+{"received_at":"2026-10-05T17:25:44.229Z","hook_event_name":"Stop","session_id":"sample-session"}
+{"received_at":"2026-10-05T17:26:44.599Z","hook_event_name":"Notification","session_id":"sample-session","notification_type":"idle_prompt","message":"Claude is waiting for your input"}
+{"received_at":"2026-10-05T17:28:47.074Z","hook_event_name":"SubagentStop","session_id":"sample-session","agent_id":"a786c9fb9c710a226","agent_type":""}

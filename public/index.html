@@ -3,79 +3,82 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pixel Office — Event Log</title>
+  <title>Brick Office</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Manrope:wght@500;700&display=swap" rel="stylesheet">
   <style>
-    :root { color-scheme: dark; --bg: #111318; --panel: #1a1d24; --muted: #8b93a7; --line: #2a2f3a; }
+    :root { --ink: #141414; --paper: #f4f2ec; --yellow: #f5cb18; --muted: #5d5f63; }
     * { box-sizing: border-box; }
-    body { margin: 0; font: 13px/1.5 ui-monospace, Consolas, monospace; background: var(--bg); color: #e6e9ef; }
-    header { display: flex; gap: 12px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--bg); }
-    h1 { font-size: 14px; margin: 0; }
-    #status { color: var(--muted); }
-    #status.on { color: #6ee7a8; }
-    button { margin-left: auto; background: var(--panel); color: inherit; border: 1px solid var(--line); padding: 4px 10px; cursor: pointer; }
-    ul { list-style: none; margin: 0; padding: 8px 16px; }
-    li { border-bottom: 1px solid var(--line); padding: 6px 0; }
-    .row { display: flex; gap: 10px; cursor: pointer; }
-    .time { color: var(--muted); }
-    .name { font-weight: 600; min-width: 150px; }
-    .agent { color: #f5c76b; }
-    .detail { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    pre { display: none; background: var(--panel); padding: 8px; overflow-x: auto; margin: 6px 0 0; }
-    li.open pre { display: block; }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #b8b7b8; color: var(--ink); font-family: 'Manrope', sans-serif; }
+    #stage { position: fixed; inset: 0; }
+    #stage canvas { display: block; }
+    .labels { position: absolute; inset: 0; pointer-events: none; }
+
+    header {
+      position: fixed; top: 16px; left: 16px; z-index: 2;
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 14px; border-radius: 14px;
+      background: rgba(244, 242, 236, .86); backdrop-filter: blur(10px);
+      box-shadow: 0 3px 0 rgba(0,0,0,.12);
+    }
+    .stud { width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 50% 42%, #ffe45c 0 30%, var(--yellow) 31% 60%, #d9b20e 61% 68%, var(--yellow) 69%); box-shadow: 0 3px 0 #b8940a; }
+    h1 { margin: 0; font: 800 15px 'Unbounded', sans-serif; letter-spacing: -.02em; }
+    #status { font-size: 12px; color: var(--muted); }
+    #status[data-on="true"] { color: #1d7a43; }
+    header a { font-size: 12px; font-weight: 700; color: var(--ink); text-decoration: none; border-bottom: 2px solid var(--yellow); }
+
+    aside {
+      position: fixed; right: 16px; bottom: 16px; z-index: 2; width: min(340px, calc(100vw - 32px));
+      padding: 12px 14px; border-radius: 14px;
+      background: rgba(244, 242, 236, .9); backdrop-filter: blur(10px); box-shadow: 0 3px 0 rgba(0,0,0,.12);
+    }
+    aside h2 { margin: 0 0 6px; font: 600 11px 'Unbounded', sans-serif; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+    #feed { list-style: none; margin: 0; padding: 0; font-size: 12.5px; }
+    #feed li { display: flex; gap: 8px; padding: 4px 0 4px 9px; border-left: 3px solid var(--accent); margin-bottom: 3px; }
+    #feed li:first-child { animation: in .3s ease-out; }
+    #feed time { color: var(--muted); font-variant-numeric: tabular-nums; flex: none; }
+    #feed span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #feed:empty::after { content: 'Belum ada aktivitas. Jalankan Claude Code di folder playground.'; color: var(--muted); }
+
+    /* Label di atas kepala karakter */
+    .tag { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; transform: translateY(-6px); }
+    .tag .role { font: 800 10px 'Unbounded', sans-serif; letter-spacing: .04em; text-transform: uppercase; color: #fff; background: var(--accent); padding: 3px 7px; border-radius: 6px; box-shadow: 0 2px 0 rgba(0,0,0,.25); }
+    .tag .state { font-weight: 700; background: rgba(244,242,236,.92); padding: 1px 6px; border-radius: 5px; }
+    .tag .detail { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); background: rgba(244,242,236,.8); padding: 0 5px; border-radius: 4px; }
+    .tag .detail:empty { display: none; }
+    .tag[data-status="asleep"] .state { opacity: .7; }
+    .tag .bang, .tag .zz { display: none; }
+    .tag.alert .bang { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--yellow); font: 800 15px 'Unbounded', sans-serif; box-shadow: 0 3px 0 #b8940a; animation: bounce .9s ease-in-out infinite; }
+    .tag[data-status="asleep"] .zz { display: block; font: 800 13px 'Unbounded', sans-serif; color: var(--muted); animation: float 2.4s ease-in-out infinite; }
+    .tag .zz i { font-size: 9px; font-style: normal; vertical-align: super; }
+    .zone { font: 600 10px 'Unbounded', sans-serif; text-transform: uppercase; letter-spacing: .08em; color: rgba(20,20,20,.55); pointer-events: none; }
+
+    @keyframes bounce { 50% { transform: translateY(-6px); } }
+    @keyframes float { 50% { transform: translateY(-4px); opacity: .6; } }
+    @keyframes in { from { opacity: 0; transform: translateX(8px); } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+    @media (max-width: 600px) {
+      header { top: 12px; left: 12px; right: 12px; flex-wrap: wrap; }
+      aside { right: 12px; left: 12px; bottom: 12px; width: auto; }
+      #feed li:nth-child(n+4) { display: none; }
+    }
   </style>
+  <script type="importmap">
+    { "imports": { "three": "/vendor/three/build/three.module.js", "three/addons/": "/vendor/three/examples/jsm/" } }
+  </script>
 </head>
 <body>
+  <div id="stage"></div>
   <header>
-    <h1>Pixel Office · Event Log</h1>
+    <div class="stud" aria-hidden="true"></div>
+    <h1>Brick Office</h1>
     <span id="status">menghubungkan…</span>
-    <button id="clear">Bersihkan</button>
+    <a href="/log.html" target="_blank">Log mentah</a>
   </header>
-  <ul id="log"></ul>
-
-  <script>
-    const log = document.getElementById('log');
-    const status = document.getElementById('status');
-
-    // Tahap 1: belum ada grafis, hanya memastikan data setiap hook terbaca.
-    function describe(e) {
-      const tool = e.tool_name ? `${e.tool_name}` : '';
-      const input = e.tool_input ?? {};
-      const target = input.file_path ?? input.command ?? input.pattern ?? input.description ?? input.prompt ?? e.prompt ?? e.message ?? '';
-      return [tool, String(target).slice(0, 160)].filter(Boolean).join(' · ');
-    }
-
-    function agentLabel(e) {
-      // Cari tanda subagent di payload; nama field dikonfirmasi lewat logs/events.jsonl.
-      const id = e.agent_type ?? e.subagent_type ?? e.agent_id ?? e.tool_input?.subagent_type;
-      return id ? `[${id}]` : `[utama ${String(e.session_id ?? '').slice(0, 6)}]`;
-    }
-
-    function render(e) {
-      const li = document.createElement('li');
-      const time = new Date(e.received_at).toLocaleTimeString('id-ID');
-      li.innerHTML = `<div class="row"><span class="time"></span><span class="name"></span><span class="agent"></span><span class="detail"></span></div><pre></pre>`;
-      li.querySelector('.time').textContent = time;
-      li.querySelector('.name').textContent = e.hook_event_name ?? '(tanpa nama)';
-      li.querySelector('.agent').textContent = agentLabel(e);
-      li.querySelector('.detail').textContent = describe(e);
-      li.querySelector('pre').textContent = JSON.stringify(e, null, 2);
-      li.querySelector('.row').onclick = () => li.classList.toggle('open');
-      log.prepend(li);
-    }
-
-    function connect() {
-      const ws = new WebSocket(`ws://${location.host}/ws`);
-      ws.onopen = () => { status.textContent = 'terhubung'; status.className = 'on'; };
-      ws.onclose = () => { status.textContent = 'terputus, mencoba lagi…'; status.className = ''; setTimeout(connect, 1500); };
-      ws.onmessage = ({ data }) => {
-        const msg = JSON.parse(data);
-        if (msg.type === 'history') { log.innerHTML = ''; msg.events.forEach(render); }
-        if (msg.type === 'event') render(msg.event);
-      };
-    }
-
-    document.getElementById('clear').onclick = () => (log.innerHTML = '');
-    connect();
-  </script>
+  <aside>
+    <h2>Aktivitas</h2>
+    <ul id="feed"></ul>
+  </aside>
+  <script type="module" src="/js/main.js"></script>
 </body>
 </html>

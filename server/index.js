@@ -16,6 +16,8 @@ const history = [];
 const app = express();
 app.use(express.json({ limit: '2mb' }));
 app.use(express.static(path.join(root, 'public')));
+// Three.js disajikan dari node_modules supaya kantor tetap jalan tanpa internet.
+app.use('/vendor/three', express.static(path.join(root, 'node_modules', 'three')));
 
 app.post('/event', async (req, res) => {
   const event = { received_at: new Date().toISOString(), ...req.body };

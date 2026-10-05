@@ -1,18 +1,19 @@
-# Pixel Office
+# Brick Office
 
-Kantor pixel-art yang memvisualisasikan subagent Claude Code secara real-time.
-Setiap subagent (backend, frontend, qa, ...) tampil sebagai karyawan; hooks Claude Code
+Kantor 3D bergaya mainan balok (Three.js) yang memvisualisasikan subagent Claude Code secara real-time.
+Setiap subagent (backend, frontend, qa, ...) tampil sebagai minifigure karyawan; hooks Claude Code
 mengirim event ke server lokal, lalu diteruskan ke browser lewat WebSocket.
 
 ```
-Claude Code hooks ──► hooks/send-event.js ──POST──► server (Express) ──WebSocket──► browser
+Claude Code hooks ──► hooks/send-event.js ──POST──► server (Express) ──WebSocket──► kantor 3D
 ```
 
 ## Menjalankan
 
 ```bash
 npm install
-npm run dev            # http://localhost:4545
+npm run dev            # kantor: http://localhost:4545, log mentah: /log.html
+npm run replay         # putar ulang rekaman samples/todo-run.jsonl tanpa Claude Code
 ```
 
 Lalu di terminal lain jalankan Claude Code di folder `playground/`, yang sudah berisi
@@ -23,7 +24,7 @@ Setiap payload hook disimpan mentah di `logs/events.jsonl`.
 ## Tahapan
 
 - [x] **Tahap 1** — hooks → server → event log di browser (tanpa grafis)
-- [ ] **Tahap 2** — kantor statis, karakter berganti status
+- [x] **Tahap 2** — kantor 3D statis, minifigure berganti status
 - [ ] **Tahap 3** — karakter berjalan, gelembung chat, melapor ke PM
 
 ## Temuan Tahap 1 (Claude Code 2.1.289)
@@ -36,3 +37,16 @@ Setiap payload hook disimpan mentah di `logs/events.jsonl`.
 - Ada `SubagentStop` tanpa `agent_type` dengan `agent_id` yang tidak pernah muncul di
   `SubagentStart`. Itu agen internal Claude Code, jadi diabaikan.
 - `Notification` dengan `notification_type` menandakan Claude menunggu input pengguna.
+
+## Kantor (Tahap 2)
+
+| Berkas | Isi |
+|---|---|
+| `public/js/agents.js` | event hooks → status karyawan (tanpa Three.js) |
+| `public/js/minifig.js` | minifigure dari bentuk dasar + pose per status |
+| `public/js/textures.js` | wajah dan sablon badan digambar di canvas |
+| `public/js/office.js` | lantai, dinding bata, meja, ruang rapat, pantry, label |
+
+Peran `backend`, `frontend`, dan `qa` punya meja tetap. Subagent lain otomatis mendapat
+minifigure dengan warna tetap (dari hash namanya) di meja cadangan.
+Tambahkan `?timer` di URL bila halaman perlu tetap dirender di tab tersembunyi.

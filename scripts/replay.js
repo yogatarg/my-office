@@ -6,7 +6,7 @@ const args = process.argv.slice(2);
 const speedIndex = args.indexOf('--speed');
 const speed = speedIndex >= 0 ? Number(args[speedIndex + 1]) : 4;
 const file = args.find((a, i) => !a.startsWith('--') && i !== speedIndex + 1) ?? 'samples/todo-run.jsonl';
-const url = process.env.PIXEL_OFFICE_URL ?? 'http://localhost:4545/event';
+const url = process.env.MY_OFFICE_URL ?? 'http://localhost:4545/event';
 const MAX_GAP_MS = 2500; // jeda panjang (mis. menunggu pengguna) dipersingkat
 
 const events = (await readFile(file, 'utf8')).trim().split('\n').map((line) => JSON.parse(line));

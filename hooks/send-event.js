@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // Dipanggil oleh hooks Claude Code: membaca payload JSON dari stdin
-// lalu meneruskannya ke server Pixel Office. Selalu keluar dengan kode 0
+// lalu meneruskannya ke server MY Office. Selalu keluar dengan kode 0
 // agar Claude Code tidak terganggu walau server sedang mati.
 
-const URL = process.env.PIXEL_OFFICE_URL ?? 'http://localhost:4545/event';
+const URL = process.env.MY_OFFICE_URL ?? 'http://localhost:4545/event';
 
 let input = '';
 process.stdin.setEncoding('utf8');

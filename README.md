@@ -1,4 +1,4 @@
-# Brick Office
+# MY Office
 
 Kantor 3D bergaya mainan balok (Three.js) yang memvisualisasikan subagent Claude Code secara real-time.
 Setiap subagent (backend, frontend, qa, ...) tampil sebagai minifigure karyawan; hooks Claude Code

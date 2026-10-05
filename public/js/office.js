@@ -216,22 +216,30 @@ export function createOffice(container) {
   zoneSign(scene, 'Ruang Rapat', 9.5, -1.4);
   zoneSign(scene, 'Pantry', 10, 2.6);
 
-  // Posisi meja: PM di belakang, tiga peran tetap di baris tengah, sisanya meja cadangan.
+  // PM di pojok belakang. Tim duduk di satu blok meja: baris A menghadap +x (wajah terlihat
+  // kamera), baris B di seberangnya menghadap -x, punggung meja saling menempel.
+  const ROW_A = -5;
+  const ROW_B = ROW_A + 4;
+  const COLS = [-2.1, 0.5, 3.1];
   const layout = {
-    main: [-4, -6.5, 3.2],
-    backend: [-9, -1],
-    frontend: [-4, -1],
-    qa: [1, -1],
+    main: [-11.5, -7, 3.2, 1],
+    backend: [ROW_A, COLS[0], 2.6, 1],
+    frontend: [ROW_A, COLS[1], 2.6, 1],
+    qa: [ROW_A, COLS[2], 2.6, 1],
   };
-  const spareSpot = (i) => [-9 + (i % 3) * 5, 4.5 + Math.floor(i / 3) * 3.8];
+  // Meja cadangan mengisi baris B dulu, lalu blok diperpanjang bergantian di kedua baris.
+  const spareSpot = (i) => {
+    if (i < 3) return [ROW_B, COLS[i], 2.6, -1];
+    const col = 3 + Math.floor((i - 3) / 2);
+    return (i - 3) % 2 ? [ROW_A, COLS[0] + col * 2.6, 2.6, 1] : [ROW_B, COLS[0] + col * 2.6, 2.6, -1];
+  };
   const desks = new Map();
   const spares = [];
 
-  function placeDesk([x, z, width]) {
+  function placeDesk([x, z, width, facing]) {
     const desk = createDesk(width);
     desk.group.position.set(x, 0, z);
-    // Karakter menghadap +x: kamera melihat wajahnya dari samping depan, tidak terhalang laptop.
-    desk.group.rotation.y = Math.PI / 2;
+    desk.group.rotation.y = (facing * Math.PI) / 2;
     scene.add(desk.group);
     return desk;
   }

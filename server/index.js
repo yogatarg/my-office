@@ -48,5 +48,5 @@ function broadcast(message) {
 }
 
 server.listen(PORT, () => {
-  console.log(`Pixel Office berjalan di http://localhost:${PORT}`);
+  console.log(`MY Office berjalan di http://localhost:${PORT}`);
 });

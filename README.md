@@ -20,7 +20,12 @@ npm run replay -- samples/pm-delegation.jsonl   # rekaman PM memanggil QA
 Lalu di terminal lain jalankan Claude Code di folder `playground/`, yang sudah berisi
 hooks (`.claude/settings.json`) dan tiga subagent (`.claude/agents/`).
 
-Setiap payload hook disimpan mentah di `logs/events.jsonl`.
+Setiap event hook disimpan di `logs/events.jsonl` (tidak ikut ke git) dalam bentuk ringkas:
+
+- `tool_response` (isi file, keluaran perintah) dibuang; ukurannya dicatat sebagai `tool_response_size`.
+- Teks lebih dari 500 karakter dipotong dengan penanda `… [dipotong N karakter]`.
+- Bila file melewati 5 MB, file diganti nama menjadi `events-<waktu>.jsonl`; hanya 5 arsip terbaru disimpan.
+  Atur dengan variabel lingkungan `LOG_MAX_MB` dan `LOG_KEEP`.
 
 ## Tahapan
 

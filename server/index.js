@@ -1,13 +1,18 @@
 import express from 'express';
 import { WebSocketServer } from 'ws';
 import { createServer } from 'node:http';
-import { appendFile, mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { compactEvent, createEventLog } from './eventlog.js';
 
 const PORT = Number(process.env.PORT ?? 4545);
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const logFile = path.join(root, 'logs', 'events.jsonl');
+
+// Log event dipadatkan dan dirotasi. Batas bisa diubah lewat LOG_MAX_MB dan LOG_KEEP.
+const eventLog = createEventLog(path.join(root, 'logs', 'events.jsonl'), {
+  maxBytes: Number(process.env.LOG_MAX_MB ?? 5) * 1024 * 1024,
+  keep: Number(process.env.LOG_KEEP ?? 5),
+});
 
 // Riwayat singkat supaya browser yang baru dibuka langsung melihat event terakhir.
 const HISTORY_LIMIT = 200;
@@ -20,18 +25,15 @@ app.get('/office.config.json', (req, res) => res.sendFile(path.join(root, 'offic
 // Three.js disajikan dari node_modules supaya kantor tetap jalan tanpa internet.
 app.use('/vendor/three', express.static(path.join(root, 'node_modules', 'three')));
 
-app.post('/event', async (req, res) => {
-  const event = { received_at: new Date().toISOString(), ...req.body };
+app.post('/event', (req, res) => {
+  const event = compactEvent({ received_at: new Date().toISOString(), ...req.body });
 
   history.push(event);
   if (history.length > HISTORY_LIMIT) history.shift();
 
   broadcast({ type: 'event', event });
   res.sendStatus(204);
-
-  // Payload mentah disimpan untuk dipelajari: field apa saja yang dikirim tiap hook.
-  await mkdir(path.dirname(logFile), { recursive: true });
-  await appendFile(logFile, JSON.stringify(event) + '\n').catch(() => {});
+  eventLog.append(event);
 });
 
 const server = createServer(app);

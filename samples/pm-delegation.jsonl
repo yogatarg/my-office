@@ -1,0 +1,18 @@
+{"received_at":"2026-10-07T05:17:24.673Z","hook_event_name":"SessionStart","session_id":"sample-pm"}
+{"received_at":"2026-10-07T05:17:27.288Z","hook_event_name":"UserPromptSubmit","session_id":"sample-pm","prompt":"Panggil subagent pm. Minta pm untuk memanggil sendiri subagent qa (bukan kamu yang memanggil qa) agar qa membaca todo.html dan menyebutkan 1 kemungkinan bug. Jangan ubah file apa pun. Di akhir, lapork"}
+{"received_at":"2026-10-07T05:17:32.524Z","hook_event_name":"PreToolUse","session_id":"sample-pm","tool_name":"Agent","tool_input":{"subagent_type":"pm","description":"Panggil qa untuk cek todo.html"}}
+{"received_at":"2026-10-07T05:17:32.845Z","hook_event_name":"SubagentStart","session_id":"sample-pm","agent_id":"abf65f171ee9c97f1","agent_type":"pm"}
+{"received_at":"2026-10-07T05:17:32.846Z","hook_event_name":"PostToolUse","session_id":"sample-pm","tool_name":"Agent","tool_input":{"subagent_type":"pm","description":"Panggil qa untuk cek todo.html"}}
+{"received_at":"2026-10-07T05:17:38.274Z","hook_event_name":"Stop","session_id":"sample-pm"}
+{"received_at":"2026-10-07T05:17:39.768Z","hook_event_name":"PreToolUse","session_id":"sample-pm","agent_id":"abf65f171ee9c97f1","agent_type":"pm","tool_name":"Agent","tool_input":{"subagent_type":"qa","description":"Identifikasi bug dari todo.html"}}
+{"received_at":"2026-10-07T05:17:40.016Z","hook_event_name":"SubagentStart","session_id":"sample-pm","agent_id":"aaaf4583628b44a43","agent_type":"qa"}
+{"received_at":"2026-10-07T05:17:40.017Z","hook_event_name":"PostToolUse","session_id":"sample-pm","agent_id":"abf65f171ee9c97f1","agent_type":"pm","tool_name":"Agent","tool_input":{"subagent_type":"qa","description":"Identifikasi bug dari todo.html"}}
+{"received_at":"2026-10-07T05:17:42.449Z","hook_event_name":"PreToolUse","session_id":"sample-pm","agent_id":"aaaf4583628b44a43","agent_type":"qa","tool_name":"Read","tool_input":{"file_path":"todo.html"}}
+{"received_at":"2026-10-07T05:17:42.702Z","hook_event_name":"PostToolUse","session_id":"sample-pm","agent_id":"aaaf4583628b44a43","agent_type":"qa","tool_name":"Read","tool_input":{"file_path":"todo.html"}}
+{"received_at":"2026-10-07T05:17:43.317Z","hook_event_name":"SubagentStop","session_id":"sample-pm","agent_id":"abf65f171ee9c97f1","agent_type":"pm"}
+{"received_at":"2026-10-07T05:17:43.630Z","hook_event_name":"UserPromptSubmit","session_id":"sample-pm","prompt":"<task-notification> (hasil subagent latar belakang)"}
+{"received_at":"2026-10-07T05:17:48.398Z","hook_event_name":"Stop","session_id":"sample-pm"}
+{"received_at":"2026-10-07T05:18:52.495Z","hook_event_name":"SubagentStop","session_id":"sample-pm","agent_id":"aaaf4583628b44a43","agent_type":"qa"}
+{"received_at":"2026-10-07T05:18:52.784Z","hook_event_name":"UserPromptSubmit","session_id":"sample-pm","prompt":"<task-notification> (hasil subagent latar belakang)"}
+{"received_at":"2026-10-07T05:18:59.235Z","hook_event_name":"Stop","session_id":"sample-pm"}
+{"received_at":"2026-10-07T05:18:59.608Z","hook_event_name":"SessionEnd","session_id":"sample-pm"}

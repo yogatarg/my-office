@@ -138,7 +138,8 @@ export function createTracker(config) {
         return 'Kantor tutup';
 
       case 'UserPromptSubmit': {
-        const isReport = String(e.prompt ?? '').startsWith('<agent-message');
+        // Hasil subagent kembali ke agen utama sebagai prompt khusus, bukan perintah dari kamu.
+        const isReport = /^<(agent-message|task-notification)/.test(String(e.prompt ?? ''));
         agent.alert = false;
         show(agent, 'listening', isReport ? 'laporan masuk' : 'perintah baru', now);
         agent.decayAt = now + LISTEN_MS;

@@ -14,6 +14,7 @@ Claude Code hooks ──► hooks/send-event.js ──POST──► server (Expr
 npm install
 npm run dev            # kantor: http://localhost:4545, log mentah: /log.html
 npm run replay         # putar ulang rekaman samples/todo-run.jsonl tanpa Claude Code
+npm run replay -- samples/pm-delegation.jsonl   # rekaman PM memanggil QA
 ```
 
 Lalu di terminal lain jalankan Claude Code di folder `playground/`, yang sudah berisi
@@ -38,6 +39,16 @@ Setiap payload hook disimpan mentah di `logs/events.jsonl`.
 - Ada `SubagentStop` tanpa `agent_type` dengan `agent_id` yang tidak pernah muncul di
   `SubagentStart`. Itu agen internal Claude Code, jadi diabaikan.
 - `Notification` dengan `notification_type` menandakan Claude menunggu input pengguna.
+
+## Temuan hierarki subagent (Claude Code 2.1.289)
+
+Diuji dengan `samples/pm-delegation.jsonl` (agen utama → pm → qa):
+
+- **Subagent bisa memanggil subagent lain** bila tool `Agent` ada di daftar `tools` file agennya.
+  Event-nya `PreToolUse:Agent` dengan `agent_type: "pm"` dan `tool_input.subagent_type: "qa"`.
+- Subagent yang dipanggil berjalan di latar belakang: pm bisa selesai lebih dulu, dan **hasil qa dikirim
+  ke agen utama** sebagai prompt `<task-notification>`, bukan ke pm.
+- Pada alur ini tidak muncul `SubagentHandback`, jadi karakter tidak berjalan ke ruang rapat.
 
 ## Divisi dan peran: `office.config.json`
 

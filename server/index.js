@@ -16,6 +16,7 @@ const history = [];
 const app = express();
 app.use(express.json({ limit: '2mb' }));
 app.use(express.static(path.join(root, 'public')));
+app.get('/office.config.json', (req, res) => res.sendFile(path.join(root, 'office.config.json')));
 // Three.js disajikan dari node_modules supaya kantor tetap jalan tanpa internet.
 app.use('/vendor/three', express.static(path.join(root, 'node_modules', 'three')));
 

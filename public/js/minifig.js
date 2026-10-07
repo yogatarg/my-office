@@ -209,8 +209,8 @@ const SEATED = -Math.PI / 2;
 function seatedPose(status, t) {
   const p = { torso: 0.04, headX: 0, headY: 0, armLx: -1.15, armLz: 0.12, armRx: -1.15, armRz: -0.12, legL: SEATED, legR: SEATED };
   switch (status) {
-    case 'asleep':
-      Object.assign(p, { torso: 0.2, headX: 0.38 + Math.sin(t * 1.2) * 0.03, headY: 0.12, armLx: -0.55, armRx: -0.55 });
+    case 'asleep': // siaga: bersandar santai sambil sesekali menoleh
+      Object.assign(p, { torso: -0.06, headX: -0.04, headY: Math.sin(t * 0.35) * 0.45, armLx: -0.85, armRx: -0.85 });
       break;
     case 'typing':
       p.armLx = -1.2 + Math.sin(t * 17) * 0.09;

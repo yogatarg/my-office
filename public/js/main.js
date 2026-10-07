@@ -1,5 +1,6 @@
 import { createTracker } from './agents.js';
 import { createOffice } from './office.js';
+import { loadConfig } from './config.js';
 
 const FEED_LIMIT = 7;
 const feed = document.getElementById('feed');
@@ -18,9 +19,13 @@ function pushFeed(text, accent, time) {
 // Sablon kaos memakai font Unbounded, jadi tunggu font siap sebelum karakter dibuat.
 await document.fonts.load('800 130px Unbounded').catch(() => {});
 
-const tracker = createTracker();
+const config = await loadConfig();
+document.title = config.name;
+document.querySelector('h1').textContent = config.name;
+
+const tracker = createTracker(config);
 const timerMode = new URLSearchParams(location.search).has('timer');
-const office = createOffice(document.getElementById('stage'), { maxDelta: timerMode ? 1 : 0.05 });
+const office = createOffice(document.getElementById('stage'), config, { maxDelta: timerMode ? 1 : 0.05 });
 
 function handle(event, now) {
   const text = tracker.apply(event, now);

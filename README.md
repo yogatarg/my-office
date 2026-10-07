@@ -1,6 +1,6 @@
 # MY Office
 
-Kantor 3D bergaya mainan balok (Three.js) yang memvisualisasikan subagent Claude Code secara real-time.
+Kantor 3D bergaya mainan balok yang realistis (Three.js) yang memvisualisasikan subagent Claude Code secara real-time.
 Setiap subagent (backend, frontend, qa, ...) tampil sebagai minifigure karyawan; hooks Claude Code
 mengirim event ke server lokal, lalu diteruskan ke browser lewat WebSocket.
 
@@ -26,6 +26,7 @@ Setiap payload hook disimpan mentah di `logs/events.jsonl`.
 - [x] **Tahap 1** — hooks → server → event log di browser (tanpa grafis)
 - [x] **Tahap 2** — kantor 3D statis, minifigure berganti status
 - [x] **Tahap 3** — karakter berjalan, gelembung chat, melapor di ruang rapat
+- [ ] **Tampilan realistis** — denah dari konfigurasi ✔, material & pencahayaan, CEO & PM
 
 ## Temuan Tahap 1 (Claude Code 2.1.289)
 
@@ -38,24 +39,49 @@ Setiap payload hook disimpan mentah di `logs/events.jsonl`.
   `SubagentStart`. Itu agen internal Claude Code, jadi diabaikan.
 - `Notification` dengan `notification_type` menandakan Claude menunggu input pengguna.
 
-## Kantor (Tahap 2)
+## Divisi dan peran: `office.config.json`
+
+Kantor dibangun dari file ini, jadi menambah divisi atau peran tidak perlu mengubah kode.
+
+```jsonc
+{
+  "name": "MY Office",
+  "lead": { "label": "CEO", ... },          // agen utama Claude Code
+  "divisions": [
+    {
+      "id": "engineering", "name": "Engineering",
+      "color": "#2f6db5",                    // warna karpet, papan nama, dan label
+      "desks": 8,                            // jumlah meja (yang kosong tetap tampil)
+      "roles": {                             // nama subagent (.claude/agents/<nama>.md)
+        "backend": { "label": "Backend", "shirt": "#1f5fbf", "accessory": "headset" }
+      }
+    }
+  ],
+  "fallback": { "name": "Umum", "desks": 4 } // subagent yang tidak terdaftar
+}
+```
+
+Field penampilan peran: `label`, `shirt`, `pants`, `hair`, `face` (`smile`, `grin`, `stern`, `skeptic`),
+`print` (`tie`, `braces`, `tag`, `check`, `letter`), `accessory` (`headset`, `beret`, `magnifier`).
+Muat ulang halaman setelah mengubah file ini.
+
+## Struktur kode
 
 | Berkas | Isi |
 |---|---|
-| `public/js/agents.js` | event hooks → status karyawan (tanpa Three.js) |
+| `public/js/config.js` | memuat dan melengkapi `office.config.json` |
+| `public/js/layout.js` | menyusun denah (ruang kaca, zona divisi, pantry) dari konfigurasi |
+| `public/js/world.js` | membangun lantai, dinding, ruangan, perabot dari denah |
+| `public/js/agents.js` | event hooks → status dan lokasi karyawan (tanpa Three.js) |
+| `public/js/office.js` | kamera, renderer, gerak karakter, label |
 | `public/js/minifig.js` | minifigure dari bentuk dasar + pose per status |
-| `public/js/textures.js` | wajah dan sablon badan digambar di canvas |
-| `public/js/office.js` | lantai, dinding bata, meja, ruang rapat, pantry, label, gerak karakter |
-| `public/js/nav.js` | pencari jalan A* di grid lantai agar karakter memutari perabot |
+| `public/js/textures.js` | wajah, sablon, lantai, karpet, kayu, papan nama (canvas) |
+| `public/js/nav.js` | pencari jalan A* di grid lantai |
 
-Peran `backend`, `frontend`, dan `qa` punya meja tetap. Subagent lain otomatis mendapat
-minifigure dengan warna tetap (dari hash namanya) di meja cadangan.
-Tambahkan `?timer` di URL bila halaman perlu tetap dirender di tab tersembunyi.
+## Perilaku karyawan
 
-## Kehidupan kantor (Tahap 3)
-
-- Subagent yang tidak bekerja beristirahat di **pantry** sambil memegang mug dan sesekali mengobrol.
-- `SubagentStart` → berjalan ke meja lalu duduk. Jalur dihitung dengan A* (`nav.js`) dan diluruskan.
-- `SubagentHandback` → berjalan ke **ruang rapat** dan melapor; gelembung berisi baris pertama laporannya.
-  Lama rapat dihitung sejak karakter tiba, lalu ia kembali ke pantry.
-- Gelembung PM menampilkan perintah dari kamu dan deskripsi tugas yang dibagikan ke subagent.
+- Karyawan yang tidak bekerja **siaga di mejanya**. Agen utama (CEO) selalu di ruangannya.
+- `SubagentStart` → mulai bekerja di meja; status mengikuti tool yang dipakai.
+- `SubagentHandback` → berjalan ke ruang rapat dan melapor (gelembung berisi baris pertama laporan).
+- Setelah selesai, rehat sebentar di **pantry** lalu kembali ke meja.
+- Jalur dihitung dengan A* agar karakter memutari meja, perabot, dan dinding kaca.

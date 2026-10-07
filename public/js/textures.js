@@ -154,3 +154,90 @@ export function torsoTexture(style) {
   }
   return toTexture(c);
 }
+
+// ---------- Permukaan ruangan: datar, dengan tekstur halus ala tile mainan ----------
+
+// Noise acak yang selalu sama, supaya tekstur tidak berubah tiap muat ulang.
+function noise(g, w, h, amount, seed = 1) {
+  let s = seed;
+  const rand = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  const img = g.getImageData(0, 0, w, h);
+  for (let i = 0; i < img.data.length; i += 4) {
+    const n = (rand() - 0.5) * amount;
+    img.data[i] += n;
+    img.data[i + 1] += n;
+    img.data[i + 2] += n;
+  }
+  g.putImageData(img, 0, 0);
+}
+
+function repeating(c) {
+  const t = toTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  return t;
+}
+
+// Satu ubin tekstur = 2x2 stud. Garis sambungan tipis seperti tile licin di atas baseplate.
+export function tileTexture(base = '#c9c8c5') {
+  const [c, g] = canvas(256, 256);
+  g.fillStyle = base;
+  g.fillRect(0, 0, 256, 256);
+  noise(g, 256, 256, 6, 3);
+  g.strokeStyle = 'rgba(0,0,0,.16)';
+  g.lineWidth = 2;
+  g.strokeRect(1, 1, 254, 254);
+  g.strokeStyle = 'rgba(255,255,255,.18)';
+  g.beginPath();
+  g.moveTo(3, 3); g.lineTo(253, 3);
+  g.moveTo(3, 3); g.lineTo(3, 253);
+  g.stroke();
+  return repeating(c);
+}
+
+// Karpet berpetak dengan serat halus; warnanya diturunkan dari warna divisi.
+export function carpetTexture(color) {
+  const [c, g] = canvas(256, 256);
+  const base = new THREE.Color(color).lerp(new THREE.Color('#4a4d52'), 0.55);
+  g.fillStyle = `#${base.getHexString()}`;
+  g.fillRect(0, 0, 256, 256);
+  noise(g, 256, 256, 22, 11);
+  g.strokeStyle = 'rgba(0,0,0,.18)';
+  g.lineWidth = 2;
+  g.strokeRect(1, 1, 254, 254);
+  return repeating(c);
+}
+
+// Papan kayu memanjang dengan sambungan yang tidak sejajar.
+export function woodTexture() {
+  const [c, g] = canvas(256, 256);
+  const tones = ['#b98d5a', '#c39765', '#ae8251', '#bf9160'];
+  for (let i = 0; i < 4; i++) {
+    g.fillStyle = tones[i];
+    g.fillRect(0, i * 64, 256, 64);
+  }
+  noise(g, 256, 256, 14, 5);
+  g.strokeStyle = 'rgba(60,35,10,.35)';
+  g.lineWidth = 2;
+  for (let i = 0; i < 4; i++) {
+    g.beginPath();
+    g.moveTo(0, i * 64 + 1); g.lineTo(256, i * 64 + 1);
+    const joint = (i * 97) % 256;
+    g.moveTo(joint, i * 64); g.lineTo(joint, i * 64 + 64);
+    g.stroke();
+  }
+  return repeating(c);
+}
+
+// Papan nama divisi: nama di atas strip warna divisi.
+export function signTexture(name, color) {
+  const [c, g] = canvas(512, 160);
+  g.fillStyle = '#f4f3ef';
+  g.fillRect(0, 0, 512, 160);
+  g.fillStyle = color;
+  g.fillRect(0, 0, 24, 160);
+  g.fillStyle = '#1d1f23';
+  g.font = '700 64px Unbounded, sans-serif';
+  g.textBaseline = 'middle';
+  g.fillText(name, 56, 84, 430);
+  return toTexture(c);
+}

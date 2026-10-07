@@ -136,19 +136,24 @@ export function createOffice(container, config, { maxDelta = 0.05, quality = 'hi
       return { x, z, yaw: Math.atan2(cx - x, cz - z), owner: null };
     });
   }
-  const quarter = [0, 1, 2, 3].map((i) => (i * Math.PI) / 2);
+  const asSpots = (list) => list.map((spot) => ({ ...spot, owner: null }));
   const spots = {
-    meeting: world.meetings.flatMap((m) => ring(m.center, 2.75, quarter)),
+    // Pelapor berdiri di dalam meja U; kursi kepala ruang rapat A untuk CEO.
+    meeting: asSpots(world.meetings.flatMap((m) => m.spots)),
+    'meeting-head': asSpots([world.meetings[0].head]),
     // Urutan sudut berselang-seling supaya beberapa karakter pertama tersebar merata.
     pantry: ring(world.pantry.table, 1.9, [0, 2, 4, 1, 3, 5].map((i) => (i * Math.PI) / 3 + Math.PI / 6)),
+    lounge: asSpots(world.lounge.seats),
   };
 
   const workers = new Map();
 
   function claimSpot(place, worker) {
     release(worker);
-    const list = spots[place];
-    const spot = list.find((s) => !s.owner) ?? list[workers.size % list.length];
+    // Rehat dibagi bergantian: sebagian duduk santai di lounge, sebagian berdiri di pantry.
+    let lists = [spots[place]];
+    if (place === 'pantry') lists = worker.prefersLounge ? [spots.lounge, spots.pantry] : [spots.pantry, spots.lounge];
+    const spot = lists.flat().find((s) => !s.owner) ?? lists[0][workers.size % lists[0].length];
     spot.owner = worker;
     worker.spot = spot;
     return spot;
@@ -191,9 +196,19 @@ export function createOffice(container, config, { maxDelta = 0.05, quality = 'hi
     fig.add(label);
 
     // Karakter baru "dijatuhkan" langsung di tempatnya seperti balok yang dipasang.
-    const worker = { fig, desk, el, drop: 6, vel: 0, last: '', steps: [], phase: 0, walking: false, spot: null, chatter: null, say: null, meetingUntil: 0 };
-    const start = agent.place === 'desk' ? seatOf(desk) : claimSpot(agent.place, worker);
-    Object.assign(worker, { x: start.x, z: start.z, yaw: start.yaw, sit: agent.place === 'desk' ? 1 : 0, goal: agent.place });
+    const worker = {
+      fig, desk, el, drop: 6, vel: 0, last: '', steps: [], phase: 0, walking: false,
+      spot: null, chatter: null, say: null, meetingUntil: 0,
+      prefersLounge: workers.size % 2 === 0,
+      anchor: accessOf(desk), // titik berdiri untuk bangun dari tempat duduk saat ini
+    };
+    let start = seatOf(desk);
+    if (agent.place !== 'desk') {
+      const spot = claimSpot(agent.place, worker);
+      start = { ...spot, sit: spot.seat ? 1 : 0 };
+      if (spot.seat) worker.anchor = { ...spot.access, yaw: spot.yaw, sit: 0 };
+    }
+    Object.assign(worker, { x: start.x, z: start.z, yaw: start.yaw, sit: start.sit, goal: agent.place });
     workers.set(agent.key, worker);
     return worker;
   }
@@ -206,17 +221,34 @@ export function createOffice(container, config, { maxDelta = 0.05, quality = 'hi
     let from = keep.length ? keep[0].to : stateOf(worker);
 
     if (from.sit > 0.5) {
-      const up = accessOf(worker.desk);
+      // Bangun ke titik berdiri milik tempat duduk yang sedang dipakai (meja, sofa, atau kursi rapat).
+      const up = { ...worker.anchor, yaw: from.yaw, sit: 0 };
       worker.steps.push({ kind: 'tween', to: up, dur: 0.45 });
       from = up;
     }
 
-    const target = place === 'desk' ? accessOf(worker.desk) : claimSpot(place, worker);
-    if (place === 'desk') release(worker);
+    let target;
+    let finish;
+    if (place === 'desk') {
+      release(worker);
+      target = accessOf(worker.desk);
+      finish = { kind: 'tween', to: seatOf(worker.desk), dur: 0.45 };
+      worker.anchor = target;
+    } else {
+      const spot = claimSpot(place, worker);
+      if (spot.seat) {
+        target = { ...spot.access, yaw: spot.yaw, sit: 0 };
+        finish = { kind: 'tween', to: { x: spot.x, z: spot.z, yaw: spot.yaw, sit: 1 }, dur: 0.5 };
+        worker.anchor = target;
+      } else {
+        target = spot;
+        finish = { kind: 'turn', yaw: spot.yaw };
+      }
+    }
     if (Math.hypot(target.x - from.x, target.z - from.z) > 0.05) {
       worker.steps.push({ kind: 'walk', points: nav.path([from.x, from.z], [target.x, target.z]) });
     }
-    worker.steps.push(place === 'desk' ? { kind: 'tween', to: seatOf(worker.desk), dur: 0.45 } : { kind: 'turn', yaw: target.yaw });
+    worker.steps.push(finish);
   }
 
   const angleDiff = (a, b) => Math.atan2(Math.sin(b - a), Math.cos(b - a));
@@ -269,6 +301,8 @@ export function createOffice(container, config, { maxDelta = 0.05, quality = 'hi
   // Tempat yang dituju tampilan. Rapat dihitung sejak karakter tiba di ruang rapat,
   // karena perjalanan dari meja bisa lebih lama daripada jeda antar event.
   function effectivePlace(worker, agent, now) {
+    // CEO duduk di kursi kepala ruang rapat selama ada karyawan yang melapor.
+    if (agent.key === 'main') return meetingActive ? 'meeting-head' : 'desk';
     if (agent.place !== 'meeting') {
       worker.meetingUntil = 0;
       return agent.place;
@@ -315,7 +349,8 @@ export function createOffice(container, config, { maxDelta = 0.05, quality = 'hi
     worker.fig.position.set(worker.x, base + worker.drop + bob, worker.z);
     worker.fig.rotation.y = worker.yaw;
 
-    poseMinifig(worker.fig, status, t, dt, { sit: worker.sit, walking: worker.walking, phase: worker.phase });
+    const seatKind = worker.goal === 'desk' ? 'desk' : worker.spot?.kind ?? 'desk';
+    poseMinifig(worker.fig, status, t, dt, { sit: worker.sit, walking: worker.walking, phase: worker.phase, seatKind });
 
     const color = STATUS[status].color;
     const on = status !== 'asleep';
@@ -353,11 +388,13 @@ export function createOffice(container, config, { maxDelta = 0.05, quality = 'hi
   window.addEventListener('resize', resize);
   setQuality(quality);
 
+  let meetingActive = false;
   const timer = new THREE.Timer();
   function render(agents) {
     timer.update();
     const dt = Math.min(timer.getDelta(), maxDelta);
     const t = timer.getElapsed();
+    meetingActive = [...workers.values()].some((w) => w.goal === 'meeting');
     for (const agent of agents.values()) syncWorker(ensureWorker(agent), agent, t, dt);
     controls.update();
     if (preset.ao) composer.render(dt);

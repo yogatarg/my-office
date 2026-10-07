@@ -67,13 +67,13 @@ Kantor dibangun dari file ini, jadi menambah divisi atau peran tidak perlu mengu
     {
       "id": "engineering", "name": "Engineering",
       "color": "#2f6db5",                    // warna karpet, papan nama, dan label
-      "desks": 8,                            // jumlah meja (yang kosong tetap tampil)
+      "desks": 6,                            // jumlah meja (yang kosong tetap tampil)
       "roles": {                             // nama subagent (.claude/agents/<nama>.md)
         "backend": { "label": "Backend", "shirt": "#1f5fbf", "accessory": "headset" }
       }
     }
   ],
-  "fallback": { "name": "Umum", "desks": 4 } // subagent yang tidak terdaftar
+  "fallback": { "name": "General", "desks": 6 } // subagent yang tidak terdaftar
 }
 ```
 
@@ -107,8 +107,15 @@ Muat ulang halaman setelah mengubah file ini.
 
 - Karyawan yang tidak bekerja **siaga di mejanya**. Agen utama (CEO) selalu di ruangannya.
 - `SubagentStart` → mulai bekerja di meja; status mengikuti tool yang dipakai.
-- `SubagentHandback` → berjalan ke ruang rapat dan melapor (gelembung berisi baris pertama laporan).
-- Setelah selesai, rehat sebentar di **pantry** lalu kembali ke meja.
+- `SubagentHandback` → berjalan ke ruang rapat, berdiri di dalam **meja U** menghadap kursi kepala, dan melapor
+  (gelembung berisi baris pertama laporan). Selama ada yang melapor, **CEO pindah ke kursi kepala** meja U.
+- Setelah selesai, rehat sebentar lalu kembali ke meja: bergantian **duduk di sofa lounge** atau berdiri di pantry.
+
+## Tata ruang
+
+- Ruang CEO dan dua ruang rapat berdinding kaca di sisi belakang; meja rapat berbentuk U.
+- Setiap divisi dikelilingi sekat kaca dengan pintu menghadap lorong, berisi 6 meja (3 berhadapan dengan 3).
+- Zona bersama: **Pantry** (konter kopi, meja bundar) dan **Lounge** (sofa, kursi santai, meja kopi, lampu lantai).
 - Jalur dihitung dengan A* agar karakter memutari meja, perabot, dan dinding kaca.
 
 ## Grafis

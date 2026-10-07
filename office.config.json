@@ -6,7 +6,7 @@
       "id": "management",
       "name": "Manajemen",
       "color": "#3d4a5c",
-      "desks": 2,
+      "desks": 6,
       "roles": {
         "pm": { "label": "PM", "shirt": "#a9cbe8", "pants": "#3a3f4b", "hair": "#6b4423", "face": "smile", "print": "shirt", "sleeves": "rolled", "accessory": ["glasses", "clipboard"] }
       }
@@ -15,7 +15,7 @@
       "id": "engineering",
       "name": "Engineering",
       "color": "#2f6db5",
-      "desks": 8,
+      "desks": 6,
       "roles": {
         "backend": { "label": "Backend", "shirt": "#1f5fbf", "pants": "#27324a", "hair": "#2a1a12", "face": "smile", "print": "braces", "accessory": "headset" },
         "frontend": { "label": "Frontend", "shirt": "#ef7d1a", "pants": "#3a3a3a", "hair": "#6b3a1e", "face": "grin", "print": "tag", "accessory": "beret" },
@@ -23,30 +23,30 @@
       }
     },
     {
-      "id": "design",
-      "name": "Design",
+      "id": "creative",
+      "name": "Creative",
       "color": "#8e5bb5",
-      "desks": 4,
+      "desks": 6,
       "roles": {}
     },
     {
       "id": "data",
       "name": "Data",
       "color": "#1f9a8a",
-      "desks": 4,
+      "desks": 6,
       "roles": {}
     },
     {
       "id": "devops",
       "name": "DevOps",
       "color": "#c0602b",
-      "desks": 4,
+      "desks": 6,
       "roles": {}
     }
   ],
   "fallback": {
-    "name": "Umum",
+    "name": "General",
     "color": "#7a7f87",
-    "desks": 4
+    "desks": 6
   }
 }

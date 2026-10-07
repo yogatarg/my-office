@@ -110,12 +110,32 @@ function createPlant(scale = 1) {
   return g;
 }
 
-function createSofa() {
+// Dudukan sofa setinggi kursi kerja (1.04) agar minifigure duduk dengan pose yang sama.
+// Sofa menghadap +z; dudukan di x = -1.05, 0, 1.05.
+const SOFA_SEATS = [-1.05, 0, 1.05];
+
+function createSofa(material = mats.leather) {
   const g = new THREE.Group();
-  g.add(solid(rbox(3.4, 0.7, 1.4), mats.leather, 0, 0.6, 0));
-  g.add(solid(rbox(3.4, 1.0, 0.35), mats.leather, 0, 1.3, -0.55));
-  for (const s of [-1, 1]) g.add(solid(rbox(0.35, 0.95, 1.4), mats.leather, s * 1.7, 0.85, 0));
+  g.add(solid(rbox(3.4, 0.8, 1.4), material, 0, 0.64, 0));
+  g.add(solid(rbox(3.4, 1.1, 0.35), material, 0, 1.45, -0.55));
+  for (const s of [-1, 1]) g.add(solid(rbox(0.35, 1.1, 1.4), material, s * 1.7, 0.9, 0));
   return g;
+}
+
+function createArmchair(material) {
+  const g = new THREE.Group();
+  g.add(solid(rbox(1.4, 0.8, 1.4), material, 0, 0.64, 0));
+  g.add(solid(rbox(1.4, 1.1, 0.35), material, 0, 1.45, -0.55));
+  for (const s of [-1, 1]) g.add(solid(rbox(0.3, 1.0, 1.4), material, s * 0.7, 0.85, 0));
+  return g;
+}
+
+// Titik duduk di perabot (lokal → dunia) beserta titik berdiri di depannya.
+function seatSpot(furniture, localX, kind) {
+  furniture.updateMatrixWorld(true);
+  const seat = furniture.localToWorld(new THREE.Vector3(localX, 0, 0.05));
+  const front = furniture.localToWorld(new THREE.Vector3(localX, 0, 1.5));
+  return { x: seat.x, z: seat.z, yaw: furniture.rotation.y, seat: true, kind, access: { x: front.x, z: front.z } };
 }
 
 function createBookshelf(width) {
@@ -152,7 +172,7 @@ function standingSign(name, color) {
 // ---------- Ruang kaca ----------
 
 // Dinding kaca dari a ke b (sejajar sumbu), dengan celah pintu opsional di tengah.
-function glassWall(scene, blockers, [ax, az], [bx, bz], door = 0) {
+function glassWall(scene, blockers, [ax, az], [bx, bz], door = 0, height = WALL_HEIGHT) {
   const along = ax === bx ? 'z' : 'x';
   const length = along === 'x' ? bx - ax : bz - az;
   const segments = door ? [[0, (length - door) / 2], [(length + door) / 2, length]] : [[0, length]];
@@ -161,19 +181,19 @@ function glassWall(scene, blockers, [ax, az], [bx, bz], door = 0) {
     const mid = (s0 + s1) / 2;
     const cx = along === 'x' ? ax + mid : ax;
     const cz = along === 'x' ? az : az + mid;
-    const pane = new THREE.Mesh(new THREE.BoxGeometry(along === 'x' ? len : 0.08, WALL_HEIGHT - 0.2, along === 'x' ? 0.08 : len), mats.glass);
-    pane.position.set(cx, WALL_HEIGHT / 2, cz);
+    const pane = new THREE.Mesh(new THREE.BoxGeometry(along === 'x' ? len : 0.08, height - 0.2, along === 'x' ? 0.08 : len), mats.glass);
+    pane.position.set(cx, height / 2, cz);
     pane.renderOrder = 1;
     scene.add(pane);
     blockers.push(pane);
     // Rangka aluminium: rel atas-bawah dan tiang setiap ±3 satuan.
-    for (const y of [0.05, WALL_HEIGHT - 0.05]) {
+    for (const y of [0.05, height - 0.05]) {
       scene.add(solid(new THREE.BoxGeometry(along === 'x' ? len : 0.14, 0.1, along === 'x' ? 0.14 : len), mats.metal, cx, y, cz));
     }
     const posts = Math.max(1, Math.round(len / 3));
     for (let i = 0; i <= posts; i++) {
       const p = s0 + (len * i) / posts;
-      scene.add(solid(new THREE.BoxGeometry(0.12, WALL_HEIGHT, 0.12), mats.metal, along === 'x' ? ax + p : ax, WALL_HEIGHT / 2, along === 'x' ? az : az + p));
+      scene.add(solid(new THREE.BoxGeometry(0.12, height, 0.12), mats.metal, along === 'x' ? ax + p : ax, height / 2, along === 'x' ? az : az + p));
     }
   }
 }
@@ -217,29 +237,63 @@ function buildRoom(scene, room, parts) {
     return;
   }
 
-  // Ruang rapat: meja bundar di tengah, kursi berselang di sekelilingnya, papan tulis di belakang.
+  // Ruang rapat: meja bentuk U yang terbuka ke arah pintu. Kursi kepala (direksi/CEO) di tengah
+  // dasar U menghadap bukaan; peserta duduk di sisi luar kedua lengan; pelapor berdiri di dalam U.
   const cx = x0 + w / 2;
-  const cz = z0 + d / 2;
-  scene.add(solid(new THREE.CylinderGeometry(1.7, 1.7, 0.16, 40), mats.wood, cx, 2.0, cz));
-  scene.add(solid(new THREE.CylinderGeometry(0.2, 0.3, 1.95, 16), mats.frame, cx, 0.98, cz));
-  for (let i = 0; i < 4; i++) {
-    const chair = createChair();
-    const a = (i / 4) * Math.PI * 2 + Math.PI / 4;
-    chair.position.set(cx + Math.sin(a) * 2.4, 0, cz + Math.cos(a) * 2.4);
-    chair.rotation.y = a + Math.PI;
-    scene.add(chair);
-    parts.obstacles.push(chair);
+  const baseZ = z0 + 2.4; // garis tengah dasar U
+  const half = 2.6; // jarak sumbu ke tengah tiap lengan
+  const armEnd = z0 + 6.6;
+  const segments = [
+    [cx, baseZ, half * 2 + 1.2, 1.2], // dasar
+    [cx - half, (baseZ + 0.6 + armEnd) / 2, 1.2, armEnd - baseZ - 0.6], // lengan kiri
+    [cx + half, (baseZ + 0.6 + armEnd) / 2, 1.2, armEnd - baseZ - 0.6], // lengan kanan
+  ];
+  for (const [x, z, sw, sd] of segments) {
+    const top = solid(rbox(sw, 0.16, sd, 0.04), mats.wood, x, 2.02, z);
+    // Panel penutup kaki di bawah tiap segmen, seperti meja rapat kantor.
+    const along = sw > sd ? 'x' : 'z';
+    const panel = solid(new THREE.BoxGeometry(along === 'x' ? sw - 0.5 : 0.12, 1.9, along === 'z' ? sd - 0.5 : 0.12), mats.frame, x, 0.95, z);
+    scene.add(top, panel);
+    parts.obstacles.push(top, panel);
   }
-  scene.add(solid(rbox(4.2, 2.0, 0.12, 0.04), mats.white, cx, 2.6, z0 + 0.35));
-  scene.add(solid(new THREE.BoxGeometry(4.4, 0.1, 0.25), mats.frame, cx, 1.55, z0 + 0.4));
-  parts.meetings.push({ center: [cx, cz] });
-  parts.circles.push([cx, cz, 1.7]);
+
+  const head = createChair(mats.leather);
+  head.position.set(cx, 0, baseZ - 1.25);
+  scene.add(head);
+  parts.obstacles.push(head);
+  // Kursi kepala didekati dari samping, karena di belakangnya sudah dinding.
+  const headSeat = { x: cx, z: baseZ - 1.25, yaw: 0, seat: true, kind: 'meeting', access: { x: cx + 1.7, z: baseZ - 1.25 } };
+
+  for (const side of [-1, 1]) {
+    for (const z of [z0 + 3.6, z0 + 4.8, z0 + 6.0]) {
+      const chair = createChair();
+      chair.position.set(cx + side * (half + 1.25), 0, z);
+      chair.rotation.y = (-side * Math.PI) / 2; // menghadap ke meja
+      scene.add(chair);
+      parts.obstacles.push(chair);
+    }
+  }
+
+  // Pelapor berdiri di dalam U, menghadap kursi kepala (-z).
+  const spots = [[-0.9, 4.4], [0.9, 4.4], [-0.9, 5.8], [0.9, 5.8]].map(([dx, dz]) => ({ x: cx + dx, z: z0 + dz, yaw: Math.PI }));
+
+  scene.add(solid(rbox(4.2, 2.0, 0.12, 0.04), mats.white, cx + 4.6, 2.6, z0 + 0.35));
+  scene.add(solid(new THREE.BoxGeometry(4.4, 0.1, 0.25), mats.frame, cx + 4.6, 1.55, z0 + 0.4));
+  parts.meetings.push({ head: headSeat, spots });
 }
 
 // ---------- Zona ----------
 
+const PARTITION_HEIGHT = 2.6; // sekat kaca divisi sedikit lebih rendah dari dinding ruangan
+
 function buildDivision(scene, zone, parts) {
-  floorPatch(scene, carpetTexture(zone.color), 'carpet', zone.x0, zone.z0, zone.w, zone.d);
+  const { x0, z0, w, d } = zone;
+  floorPatch(scene, carpetTexture(zone.color), 'carpet', x0, z0, w, d);
+  // Sekat kaca di keempat sisi, pintu di sisi depan yang menghadap lorong.
+  glassWall(scene, parts.blockers, [x0, z0], [x0 + w, z0], 0, PARTITION_HEIGHT);
+  glassWall(scene, parts.blockers, [x0, z0], [x0, z0 + d], 0, PARTITION_HEIGHT);
+  glassWall(scene, parts.blockers, [x0 + w, z0], [x0 + w, z0 + d], 0, PARTITION_HEIGHT);
+  glassWall(scene, parts.blockers, [x0, z0 + d], [x0 + w, z0 + d], 2.4, PARTITION_HEIGHT);
   const desks = zone.slots.map((slot) => {
     const desk = createDesk();
     desk.group.position.set(slot.x, 0, slot.z);
@@ -251,12 +305,12 @@ function buildDivision(scene, zone, parts) {
   parts.divisionDesks.set(zone.id, desks);
 
   const sign = standingSign(zone.name, zone.color);
-  sign.position.set(zone.x0 + 1.6, 0, zone.z0 + zone.d - 0.5);
+  sign.position.set(zone.x0 + 1.6, 0, zone.z0 + zone.d - 0.7);
   scene.add(sign);
   parts.obstacles.push(sign);
 
   const plant = createPlant(0.9);
-  plant.position.set(zone.x0 + zone.w - 0.7, 0, zone.z0 + 0.7);
+  plant.position.set(zone.x0 + zone.w - 0.8, 0, zone.z0 + 0.8);
   scene.add(plant);
   parts.circles.push([plant.position.x, plant.position.z, 0.45]);
 }
@@ -292,6 +346,61 @@ function buildPantry(scene, zone, parts) {
   parts.obstacles.push(sign);
 }
 
+// Lounge: sofa dan kursi santai mengelilingi meja kopi di atas karpet hangat.
+function buildLounge(scene, zone, parts) {
+  const { x0, z0, w, d } = zone;
+  floorPatch(scene, woodTexture(), 'wood', x0, z0, w, d);
+  floorPatch(scene, carpetTexture('#a0522d'), 'carpet', x0 + 0.8, z0 + 1.2, w - 1.6, d - 2.6, 0);
+
+  const fabric = plastic('#4f6d7a', { roughness: 0.8, clearcoat: 0 });
+  const accent = plastic('#d98c3a', { roughness: 0.8, clearcoat: 0 });
+  const seats = [];
+
+  const sofa = createSofa(fabric);
+  sofa.position.set(x0 + w / 2 - 0.4, 0, z0 + 2.6); // menghadap +z: wajah terlihat kamera
+  const side = createSofa(fabric);
+  side.position.set(x0 + w - 1.4, 0, z0 + 6.6);
+  side.rotation.y = -Math.PI / 2; // menghadap meja kopi (-x)
+  const armchair = createArmchair(accent);
+  armchair.position.set(x0 + 1.6, 0, z0 + 6.6);
+  armchair.rotation.y = Math.PI / 2; // menghadap +x
+
+  for (const f of [sofa, side, armchair]) {
+    scene.add(f);
+    parts.obstacles.push(f);
+  }
+  for (const x of SOFA_SEATS) seats.push(seatSpot(sofa, x, 'lounge'));
+  for (const x of SOFA_SEATS) seats.push(seatSpot(side, x, 'lounge'));
+  seats.push(seatSpot(armchair, 0, 'lounge'));
+
+  // Meja kopi rendah di tengah.
+  const tableX = x0 + w / 2 - 0.2;
+  const tableZ = z0 + 6.6;
+  const table = solid(rbox(2.4, 0.14, 1.6, 0.04), mats.wood, tableX, 0.95, tableZ);
+  const base = solid(new THREE.BoxGeometry(2.0, 0.88, 1.2), mats.frame, tableX, 0.44, tableZ);
+  scene.add(table, base);
+  parts.obstacles.push(table);
+  scene.add(solid(new THREE.CylinderGeometry(0.13, 0.12, 0.26, 16), mats.white, tableX - 0.5, 1.15, tableZ));
+  scene.add(solid(rbox(0.6, 0.06, 0.45), plastic('#2f6db5'), tableX + 0.4, 1.05, tableZ + 0.2));
+
+  for (const [px, pz, sc] of [[x0 + 0.8, z0 + 0.8, 1], [x0 + w - 0.8, z0 + 0.8, 1.1], [x0 + 0.8, z0 + d - 0.9, 0.8]]) {
+    const plant = createPlant(sc);
+    plant.position.set(px, 0, pz);
+    scene.add(plant);
+    parts.circles.push([px, pz, 0.45 * sc]);
+  }
+
+  // Lampu lantai di sudut sofa.
+  scene.add(solid(new THREE.CylinderGeometry(0.05, 0.05, 2.8, 8), mats.metal, x0 + w - 0.9, 1.4, z0 + 2.2));
+  scene.add(solid(new THREE.CylinderGeometry(0.25, 0.4, 0.5, 20), plastic('#f4ead2', { emissive: '#ffdca0', emissiveIntensity: 0.35 }), x0 + w - 0.9, 2.95, z0 + 2.2));
+
+  const sign = standingSign(zone.name, '#a0522d');
+  sign.position.set(x0 + 1.6, 0, z0 + d - 0.7);
+  scene.add(sign);
+  parts.obstacles.push(sign);
+  parts.lounge = { seats };
+}
+
 // ---------- Bangunan ----------
 
 function buildShell(scene, layout, parts) {
@@ -325,11 +434,13 @@ export function buildWorld(scene, layout) {
     meetings: [],
     ceoDesk: null,
     pantry: null,
+    lounge: null,
   };
   buildShell(scene, layout, parts);
   for (const room of layout.rooms) buildRoom(scene, room, parts);
   for (const zone of layout.zones) {
     if (zone.kind === 'pantry') buildPantry(scene, zone, parts);
+    else if (zone.kind === 'lounge') buildLounge(scene, zone, parts);
     else buildDivision(scene, zone, parts);
   }
   return parts;

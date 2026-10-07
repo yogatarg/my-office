@@ -3,12 +3,13 @@
 //
 //   ┌ ruang CEO ┬ rapat A ┬ rapat B ┐   ← deretan ruang kaca di dinding belakang
 //   ├───────────┴─ lorong ┴─────────┤
-//   │ divisi │ divisi │ divisi │ …  │   ← zona disusun berbaris, dipisah lorong
-//   │ divisi │ umum   │ pantry │    │
+//   │ divisi │ divisi │ divisi │ …  │   ← divisi berdinding kaca, disusun berbaris, dipisah lorong
+//   │ divisi │ general│ pantry │lounge│
 
 export const DESK_WIDTH = 2.6; // lebar meja; meja dalam satu baris saling menempel
 const ROW_GAP = 4; // jarak antar baris meja yang saling berhadapan (punggung meja menempel)
-const ZONE_WIDTH = 8.8;
+const ZONE_WIDTH = 9.6;
+const ROW_A_OFFSET = 2.8; // jarak baris meja pertama dari dinding kiri zona, cukup untuk lalu lalang
 const ZONE_PAD = 1.6; // ruang kosong di ujung blok meja (papan nama, lalu lalang)
 const CORRIDOR = 3;
 const MARGIN = 1.2; // jarak zona dari dinding luar
@@ -18,7 +19,8 @@ const ROOMS = [
   { id: 'meeting-a', kind: 'meeting', name: 'Ruang Rapat A', width: 9 },
   { id: 'meeting-b', kind: 'meeting', name: 'Ruang Rapat B', width: 9 },
 ];
-const PANTRY = { width: ZONE_WIDTH, depth: 9 };
+// Zona bersama memakai ukuran divisi standar (6 meja) agar baris denah rata.
+const SHARED_DEPTH = 3 * DESK_WIDTH + ZONE_PAD * 2;
 
 function divisionZone(division) {
   const cols = Math.ceil(division.desks / 2);
@@ -28,7 +30,7 @@ function divisionZone(division) {
 // Kursi menghadap +x (baris A, wajah terlihat kamera) atau -x (baris B, di seberangnya).
 function deskSlots(zone) {
   const slots = [];
-  const rowA = zone.x0 + 2.4;
+  const rowA = zone.x0 + ROW_A_OFFSET;
   for (const [x, facing] of [[rowA, 1], [rowA + ROW_GAP, -1]]) {
     for (let i = 0; i < zone.cols && slots.length < zone.desks; i++) {
       slots.push({ x, z: zone.z0 + ZONE_PAD + DESK_WIDTH * (i + 0.5), facing });
@@ -39,7 +41,8 @@ function deskSlots(zone) {
 
 export function computeLayout(config) {
   const zones = [...config.divisions, config.fallback].map(divisionZone);
-  zones.push({ id: 'pantry', kind: 'pantry', name: 'Pantry', w: PANTRY.width, d: PANTRY.depth });
+  zones.push({ id: 'pantry', kind: 'pantry', name: 'Pantry', w: ZONE_WIDTH, d: SHARED_DEPTH });
+  zones.push({ id: 'lounge', kind: 'lounge', name: 'Lounge', w: ZONE_WIDTH, d: SHARED_DEPTH });
 
   // Jumlah zona per baris dipilih agar denah mendekati persegi (enak dilihat dari kamera isometrik).
   const perRow = Math.ceil(Math.sqrt(zones.length)) + 1;

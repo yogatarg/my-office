@@ -243,7 +243,11 @@ export function createMinifig(style, seed = 1) {
 
 const SEATED = -Math.PI / 2;
 
-function seatedPose(status, t) {
+function seatedPose(status, t, seatKind) {
+  // Duduk di sofa lounge: bersandar santai, satu tangan di pangkuan, tangan lain memegang mug.
+  if (seatKind === 'lounge' && status === 'asleep') {
+    return { torso: -0.2, headX: -0.05, headY: Math.sin(t * 0.3) * 0.35, armLx: -0.45, armLz: 0.15, armRx: -1.0, armRz: -0.05, legL: SEATED, legR: SEATED, mug: true };
+  }
   const p = { torso: 0.04, headX: 0, headY: 0, armLx: -1.15, armLz: 0.12, armRx: -1.15, armRz: -0.12, legL: SEATED, legR: SEATED };
   switch (status) {
     case 'asleep': // siaga: bersandar santai sambil sesekali menoleh
@@ -298,7 +302,7 @@ function walkingPose(phase) {
 export function poseMinifig(fig, status, t, dt, motion) {
   const { legL, legR, torso, head, armL, armR, paper, mug, clipboard } = fig.userData.joints;
   const pose = fig.userData.pose;
-  const target = motion.walking ? walkingPose(motion.phase) : motion.sit > 0.5 ? seatedPose(status, t) : standingPose(status, t, Boolean(clipboard));
+  const target = motion.walking ? walkingPose(motion.phase) : motion.sit > 0.5 ? seatedPose(status, t, motion.seatKind) : standingPose(status, t, Boolean(clipboard));
   const k = 1 - Math.exp(-dt * (motion.walking ? 16 : 9));
   for (const key of Object.keys(pose)) pose[key] += (target[key] - pose[key]) * k;
 

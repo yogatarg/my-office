@@ -181,9 +181,11 @@ export function createOffice(container, config, { maxDelta = 0.05, quality = 'hi
     if (workers.has(agent.key)) return workers.get(agent.key);
     const desk = deskFor(agent);
     const fig = createMinifig(agent.style, workers.size + 3);
+    fig.userData.workerKey = agent.key;
     scene.add(fig);
 
     const el = createLabel(agent.style);
+    el.addEventListener('click', () => onSelect(agent.key));
     const label = new CSS2DObject(el);
     label.position.y = 2.85;
     fig.add(label);
@@ -381,6 +383,78 @@ export function createOffice(container, config, { maxDelta = 0.05, quality = 'hi
   window.addEventListener('resize', resize);
   setQuality(quality);
 
+  // ---------- Interaksi: memilih karyawan, kamera mengikuti, terbang ke zona ----------
+  let onSelect = () => {};
+  let selected = null;
+  let follow = null; // key karyawan yang diikuti kamera
+  let flight = null; // { target: Vector3, zoom } tujuan kamera
+  const raycaster = new THREE.Raycaster();
+  const pointer = new THREE.Vector2();
+  let downAt = null;
+
+  // Cincin penanda di bawah kaki karyawan yang dipilih.
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.75, 0.95, 40), new THREE.MeshBasicMaterial({ color: '#f5cb18', transparent: true, opacity: 0.9, depthWrite: false }));
+  ring.rotation.x = -Math.PI / 2;
+  ring.visible = false;
+  scene.add(ring);
+
+  function keyOf(object) {
+    for (let o = object; o; o = o.parent) if (o.userData.workerKey) return o.userData.workerKey;
+    return null;
+  }
+
+  const canvas = renderer.domElement;
+  canvas.addEventListener('pointerdown', (e) => (downAt = [e.clientX, e.clientY]));
+  canvas.addEventListener('pointermove', (e) => {
+    // Menyeret kamera berarti pengguna mengambil alih: hentikan mengikuti dan terbang otomatis.
+    if (e.buttons && downAt && Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) {
+      follow = null;
+      flight = null;
+    }
+  });
+  canvas.addEventListener('pointerup', (e) => {
+    if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
+    const rect = canvas.getBoundingClientRect();
+    pointer.set(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
+    raycaster.setFromCamera(pointer, camera);
+    const hits = raycaster.intersectObjects([...workers.values()].map((w) => w.fig), true);
+    onSelect(hits.length ? keyOf(hits[0].object) : null);
+  });
+
+  function moveCamera(target, zoom, dt, speed) {
+    const k = 1 - Math.exp(-dt * speed);
+    const delta = target.clone().sub(controls.target).multiplyScalar(k);
+    controls.target.add(delta);
+    camera.position.add(delta);
+    if (zoom) {
+      camera.zoom += (zoom - camera.zoom) * k;
+      camera.updateProjectionMatrix();
+    }
+    return delta.length();
+  }
+
+  function updateCamera(dt) {
+    if (follow && workers.has(follow)) {
+      const w = workers.get(follow);
+      moveCamera(new THREE.Vector3(w.x, 2, w.z), Math.max(camera.zoom, 3), dt, 4);
+    } else if (flight) {
+      const moved = moveCamera(flight.target, flight.zoom, dt, 5);
+      if (moved < 0.002 && Math.abs(camera.zoom - flight.zoom) < 0.01) flight = null;
+    }
+    const w = selected && workers.get(selected);
+    ring.visible = Boolean(w);
+    if (w) ring.position.set(w.x, 0.08, w.z);
+    for (const [key, worker] of workers) worker.el.classList.toggle('selected', key === selected);
+  }
+
+  // Daftar zona untuk navigasi cepat dan minimap.
+  const zones = [
+    ...layout.rooms.map((r) => ({ id: r.id, name: r.name, x0: r.x0, z0: r.z0, w: r.w, d: r.d, color: r.kind === 'ceo' ? '#6e4a2e' : '#59606b' })),
+    ...layout.zones.map((z) => ({ id: z.id, name: z.name, x0: z.x0, z0: z.z0, w: z.w, d: z.d, color: z.color })),
+    { ...layout.hub, color: '#b98d5a' },
+    { ...layout.reception, color: '#3a3f48' },
+  ];
+
   let meetingActive = false;
   const timer = new THREE.Timer();
   function render(agents) {
@@ -389,11 +463,35 @@ export function createOffice(container, config, { maxDelta = 0.05, quality = 'hi
     const t = timer.getElapsed();
     meetingActive = [...workers.values()].some((w) => w.goal === 'meeting');
     for (const agent of agents.values()) syncWorker(ensureWorker(agent), agent, t, dt);
+    updateCamera(dt);
     controls.update();
     if (preset.ao) composer.render(dt);
     else renderer.render(scene, camera);
     labels.render(scene, camera);
   }
 
-  return { render, setQuality, debug: { scene, renderer, camera, controls, sun } };
+  return {
+    render,
+    setQuality,
+    onSelect: (cb) => (onSelect = cb),
+    select(key) {
+      selected = key;
+    },
+    follow(key) {
+      follow = key;
+      flight = null;
+    },
+    flyTo(x, z, zoom = 2.6) {
+      follow = null;
+      flight = { target: new THREE.Vector3(x, 1.5, z), zoom };
+    },
+    overview() {
+      follow = null;
+      flight = { target: new THREE.Vector3(0, 1.5, 0), zoom: 1 };
+    },
+    floor: { width: layout.width, depth: layout.depth },
+    zones,
+    positions: () => [...workers].map(([key, w]) => ({ key, x: w.x, z: w.z })),
+    debug: { scene, renderer, camera, controls, sun },
+  };
 }

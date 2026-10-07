@@ -43,6 +43,7 @@ export function normalizeConfig(raw) {
   return {
     name: raw.name ?? 'MY Office',
     workspace: raw.workspace ?? null,
+    officeFolder: raw.officeFolder ?? 'my-office',
     lead: { ...ROLE_DEFAULTS, label: 'CEO', shirt: '#f4f2ec', print: 'tie', accent: '#141414', ...raw.lead },
     divisions,
     fallback,

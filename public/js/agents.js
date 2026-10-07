@@ -85,7 +85,7 @@ export function projectFinder(workspace, ignore = ['my-office']) {
 export function createTracker(config) {
   const agents = new Map();
   const lead = config.lead.label;
-  const projectOf = projectFinder(config.workspace);
+  const projectOf = projectFinder(config.workspace, [config.officeFolder.toLowerCase()]);
   const state = { project: null }; // proyek yang terakhir disentuh tim
 
   function styleFor(key) {
@@ -119,6 +119,14 @@ export function createTracker(config) {
         report: '', // isi laporan terakhir, ditampilkan saat tiba di ruang rapat
         reportDone: false, // subagent sudah selesai dan boleh pergi setelah rapat
         bubble: null,
+        // Untuk panel detail karyawan.
+        history: [], // [{ time, text }] terbaru di akhir
+        files: new Map(), // nama file → berapa kali disentuh
+        task: '', // deskripsi tugas terakhir dari CEO/PM
+        project: null,
+        startedAt: null, // waktu mulai tugas yang sedang berjalan
+        workedMs: 0, // total lama bekerja sejak halaman dibuka
+        tasksDone: 0,
       });
     }
     return agents.get(key);
@@ -139,8 +147,38 @@ export function createTracker(config) {
     if (text) agent.bubble = { text: firstLine(text), until: now + BUBBLE_MS };
   }
 
+  const HISTORY_LIMIT = 30;
+
   // Mengembalikan kalimat untuk panel aktivitas, atau null bila event diabaikan.
   function apply(e, now) {
+    if (e.agent_id && !e.agent_type) return null;
+    const agent = get(e.agent_type ?? 'main');
+    const input = e.tool_input ?? {};
+
+    if (e.hook_event_name === 'PreToolUse') {
+      if (input.file_path) {
+        const name = basename(input.file_path);
+        agent.files.set(name, (agent.files.get(name) ?? 0) + 1);
+      }
+      // Deskripsi tugas yang dibagikan menjadi "tugas saat ini" milik penerimanya.
+      if (input.subagent_type && input.description) get(input.subagent_type).task = input.description;
+    }
+    if (e.hook_event_name === 'SubagentStart') agent.startedAt = now;
+    if (e.hook_event_name === 'SubagentStop' && agent.startedAt !== null) {
+      agent.workedMs += Math.max(0, now - agent.startedAt);
+      agent.startedAt = null;
+      agent.tasksDone += 1;
+    }
+
+    const text = applyEvent(e, now);
+    if (text) {
+      agent.history.push({ time: now, text });
+      if (agent.history.length > HISTORY_LIMIT) agent.history.shift();
+    }
+    return text;
+  }
+
+  function applyEvent(e, now) {
     // Agen internal Claude Code punya agent_id tanpa agent_type: bukan karyawan kita.
     if (e.agent_id && !e.agent_type) return null;
     const agent = get(e.agent_type ?? 'main');

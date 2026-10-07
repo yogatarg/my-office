@@ -141,6 +141,15 @@ Open plan seperti kantor modern: dinding hanya untuk ruangan yang butuh privasi.
   Karyawan rehat bergantian berdiri di meja bar atau duduk di sofa.
 - **Resepsionis** dekat pintu masuk dengan dinding logo kantor dan sofa tamu.
 
+## Interaksi
+
+- **Klik karyawan** (badan atau labelnya) untuk membuka panel detail: status, tugas dari CEO/PM, proyek,
+  lama bekerja, jumlah tugas selesai, file yang disentuh, dan riwayat aktivitas. Tombol *Ikuti dengan kamera*
+  membuat kamera mengikutinya; menyeret kamera menghentikannya.
+- **Navigasi zona** di kiri bawah dan **minimap** di kanan atas (klik untuk memindahkan kamera).
+- **Notifikasi** (tombol di header): bunyi saat CEO selesai atau butuh perhatian, ditambah notifikasi sistem
+  bila tab kantor sedang tidak dilihat.
+
 ## Grafis
 
 - Plastik memakai `MeshPhysicalMaterial` dengan clearcoat tipis dan pantulan lingkungan (`RoomEnvironment`).

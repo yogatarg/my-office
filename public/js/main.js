@@ -1,6 +1,7 @@
 import { createTracker } from './agents.js';
 import { createOffice, QUALITY } from './office.js';
 import { loadConfig } from './config.js';
+import { createDetailPanel, createZoneBar, createMinimap, createNotifier } from './ui.js';
 
 const FEED_LIMIT = 7;
 const feed = document.getElementById('feed');
@@ -51,6 +52,11 @@ qualityButton.addEventListener('click', () => {
   } catch {}
 });
 
+const detail = createDetailPanel({ root: document.getElementById('detail'), tracker, office, config });
+createZoneBar({ root: document.getElementById('zones'), office });
+createMinimap({ canvas: document.querySelector('#minimap canvas'), office, tracker });
+const notifier = createNotifier({ button: document.getElementById('notify') });
+
 const projectChip = document.getElementById('project');
 function showProject() {
   const name = tracker.state.project;
@@ -58,12 +64,19 @@ function showProject() {
   if (name) projectChip.textContent = `Proyek: ${name}`;
 }
 
-function handle(event, now) {
+let lastSeen = 0; // waktu event terakhir yang sudah diproses
+
+function handle(event, now, live) {
+  lastSeen = Math.max(lastSeen, Date.parse(event.received_at) || now);
   const text = tracker.apply(event, now);
   showProject();
   if (!text) return;
   const agent = tracker.agents.get(event.agent_type ?? 'main');
   pushFeed(text, agent.style.accent, new Date(event.received_at ?? now));
+  detail.refresh();
+  if (!live || event.agent_type) return;
+  if (event.hook_event_name === 'Notification') notifier.notify('CEO butuh perhatianmu', text);
+  if (event.hook_event_name === 'Stop') notifier.notify('CEO selesai', 'Menunggu perintahmu berikutnya.');
 }
 
 function connect() {
@@ -78,10 +91,10 @@ function connect() {
     const msg = JSON.parse(data);
     if (msg.type === 'history') {
       // Riwayat diputar ulang memakai waktu aslinya agar status akhir tiap karakter benar.
-      feed.innerHTML = '';
-      for (const e of msg.events) handle(e, Date.parse(e.received_at));
+      // Saat tersambung ulang, event yang sudah diproses dilewati agar statistik tidak dobel.
+      for (const e of msg.events) if (Date.parse(e.received_at) > lastSeen) handle(e, Date.parse(e.received_at), false);
     }
-    if (msg.type === 'event') handle(msg.event, Date.now());
+    if (msg.type === 'event') handle(msg.event, Date.now(), true);
   };
 }
 connect();

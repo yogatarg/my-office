@@ -3,6 +3,7 @@ import { WebSocketServer } from 'ws';
 import { createServer } from 'node:http';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { readFile } from 'node:fs/promises';
 import { compactEvent, createEventLog } from './eventlog.js';
 
 const PORT = Number(process.env.PORT ?? 4545);
@@ -21,7 +22,15 @@ const history = [];
 const app = express();
 app.use(express.json({ limit: '2mb' }));
 app.use(express.static(path.join(root, 'public')));
-app.get('/office.config.json', (req, res) => res.sendFile(path.join(root, 'office.config.json')));
+// Nama folder kantor ikut dikirim agar kantor tidak menganggap dirinya sendiri sebagai proyek.
+app.get('/office.config.json', async (req, res) => {
+  try {
+    const config = JSON.parse(await readFile(path.join(root, 'office.config.json'), 'utf8'));
+    res.json({ ...config, officeFolder: path.basename(root) });
+  } catch (err) {
+    res.status(500).json({ error: `office.config.json tidak valid: ${err.message}` });
+  }
+});
 // Three.js disajikan dari node_modules supaya kantor tetap jalan tanpa internet.
 app.use('/vendor/three', express.static(path.join(root, 'node_modules', 'three')));
 

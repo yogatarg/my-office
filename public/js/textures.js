@@ -372,3 +372,44 @@ export function logoTexture(name) {
   g.fillText(name, 370, cy + 6, 610);
   return toTexture(c);
 }
+
+// Jam dinding analog; update(date) menggambar ulang jarum sesuai waktu.
+export function clockTexture() {
+  const [c, g] = canvas(256, 256);
+  const texture = toTexture(c);
+  function update(date = new Date()) {
+    g.clearRect(0, 0, 256, 256);
+    g.fillStyle = '#fbfaf6';
+    g.beginPath();
+    g.arc(128, 128, 126, 0, Math.PI * 2);
+    g.fill();
+    g.strokeStyle = '#1d1f23';
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2;
+      g.lineWidth = i % 3 === 0 ? 8 : 4;
+      g.beginPath();
+      g.moveTo(128 + Math.sin(a) * 100, 128 - Math.cos(a) * 100);
+      g.lineTo(128 + Math.sin(a) * 116, 128 - Math.cos(a) * 116);
+      g.stroke();
+    }
+    const hand = (angle, length, width, color) => {
+      g.strokeStyle = color;
+      g.lineWidth = width;
+      g.lineCap = 'round';
+      g.beginPath();
+      g.moveTo(128, 128);
+      g.lineTo(128 + Math.sin(angle) * length, 128 - Math.cos(angle) * length);
+      g.stroke();
+    };
+    const minutes = date.getMinutes() + date.getSeconds() / 60;
+    hand((((date.getHours() % 12) + minutes / 60) / 12) * Math.PI * 2, 60, 10, '#1d1f23');
+    hand((minutes / 60) * Math.PI * 2, 92, 6, '#1d1f23');
+    g.fillStyle = '#f5cb18';
+    g.beginPath();
+    g.arc(128, 128, 10, 0, Math.PI * 2);
+    g.fill();
+    texture.needsUpdate = true;
+  }
+  update();
+  return { texture, update };
+}

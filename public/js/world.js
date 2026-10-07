@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { plastic } from './minifig.js';
-import { tileTexture, carpetTexture, woodTexture, signTexture, slideTexture, logoTexture } from './textures.js';
+import { tileTexture, carpetTexture, woodTexture, signTexture, slideTexture, logoTexture, clockTexture } from './textures.js';
 
 // Membangun isi kantor dari hasil computeLayout(). Gaya: permukaan datar bertekstur halus,
 // stud hanya sebagai detail (puncak dinding), warna dasar netral seperti kantor sungguhan.
@@ -376,6 +376,17 @@ function buildPlanter(scene, planter, parts) {
   p.position.set(planter.x, 0, (planter.z0 + planter.z1) / 2);
   scene.add(p);
   parts.obstacles.push(p);
+
+  // Stasiun printer bersama di ujung depan pot: lemari arsip dengan printer di atasnya.
+  const station = new THREE.Group();
+  station.add(solid(rbox(1.1, 1.7, 0.9), plastic('#9aa0a7'), 0, 0.85, 0));
+  for (const y of [0.45, 1.05]) station.add(solid(new THREE.BoxGeometry(0.9, 0.04, 0.02), mats.frame, 0, y, 0.46));
+  station.add(solid(rbox(1.0, 0.5, 0.8, 0.06), mats.white, 0, 1.95, 0));
+  station.add(solid(new THREE.BoxGeometry(0.7, 0.03, 0.3), plastic('#fbfaf6'), 0, 2.21, 0.15));
+  station.add(solid(new THREE.BoxGeometry(0.18, 0.06, 0.04), plastic('#3fd37a', { emissive: '#3fd37a', emissiveIntensity: 0.6 }), 0.3, 2.05, 0.41));
+  station.position.set(planter.x, 0, planter.z1 + 0.9);
+  scene.add(station);
+  parts.obstacles.push(station);
 }
 
 // ---------- Resepsionis ----------
@@ -538,6 +549,37 @@ function buildShell(scene, layout, parts) {
   for (let x = -W / 2 + 0.5; x < W / 2; x += 1) studs.push([x, -D / 2 - t / 2]);
   for (let z = -D / 2 + 0.5; z < D / 2; z += 1) studs.push([-W / 2 - t / 2, z]);
   scene.add(studRow(studs, mats.wall, WALL_HEIGHT));
+
+  // Jendela di dinding luar. Kacanya memakai satu material bersama yang kecerahannya
+  // diatur siklus siang-malam (langit terang di siang hari, gelap di malam hari).
+  const sky = new THREE.MeshStandardMaterial({ color: '#bcd9ef', emissive: '#bcd9ef', emissiveIntensity: 0.6, roughness: 0.1 });
+  const addWindow = (x, z, alongX) => {
+    const frame = solid(new THREE.BoxGeometry(alongX ? 3.8 : 0.08, 1.9, alongX ? 0.08 : 3.8), mats.frame, x, 1.95, z);
+    const glass = new THREE.Mesh(new THREE.BoxGeometry(alongX ? 3.5 : 0.1, 1.6, alongX ? 0.1 : 3.5), sky);
+    glass.position.set(x, 1.95, z);
+    const mullion = solid(new THREE.BoxGeometry(alongX ? 0.08 : 0.12, 1.6, alongX ? 0.12 : 0.08), mats.frame, x, 1.95, z);
+    scene.add(frame, glass, mullion);
+  };
+  for (let x = -W / 2 + 4; x < W / 2 - 2; x += 6.5) addWindow(x, -D / 2 + 0.02, true);
+  for (let z = -D / 2 + 17; z < D / 2 - 2; z += 6.5) addWindow(-W / 2 + 0.02, z, false);
+
+  // Jam dinding yang menunjukkan waktu sungguhan, di atas kafe.
+  const clock = clockTexture();
+  const face = new THREE.Mesh(new THREE.CircleGeometry(0.75, 40), new THREE.MeshStandardMaterial({ map: clock.texture, roughness: 0.4 }));
+  face.position.set(layout.hub.x0 + layout.hub.w / 2, 2.55, -D / 2 + 0.06);
+  const rim = solid(new THREE.TorusGeometry(0.78, 0.07, 10, 40), mats.black, face.position.x, face.position.y, face.position.z);
+  scene.add(face, rim);
+
+  parts.ambience = { sky, clock };
+}
+
+// Titik lampu ruangan untuk malam hari: di atas tiap divisi, ruangan, hub, dan resepsionis.
+function lightSpots(layout) {
+  const center = (a) => [a.x0 + a.w / 2, a.z0 + a.d / 2];
+  const spots = [...layout.rooms, ...layout.zones, layout.reception].map(center);
+  const { x0, z0, w, d } = layout.hub;
+  for (let z = z0 + 6; z < z0 + d; z += 13) spots.push([x0 + w / 2, z]);
+  return spots;
 }
 
 export function buildWorld(scene, layout, { name = 'MY Office' } = {}) {
@@ -551,6 +593,8 @@ export function buildWorld(scene, layout, { name = 'MY Office' } = {}) {
     ceoDesk: null,
     pantry: null,
     lounge: null,
+    ambience: null,
+    lightSpots: lightSpots(layout),
   };
   buildShell(scene, layout, parts);
   for (const room of layout.rooms) buildRoom(scene, room, parts);

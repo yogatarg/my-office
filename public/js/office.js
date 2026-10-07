@@ -43,7 +43,16 @@ function createLabel(style) {
 }
 
 // maxDelta membatasi langkah waktu per frame agar animasi tidak melompat setelah tab tertunda.
-export function createOffice(container, config, { maxDelta = 0.05, quality = 'high' } = {}) {
+// Seberapa terang siang (0 = malam, 1 = siang penuh) untuk jam desimal 0..24.
+// Fajar 05.00–07.00, senja 17.00–19.30.
+export function daylightAt(hour) {
+  const ramp = (a, b, h) => Math.min(1, Math.max(0, (h - a) / (b - a)));
+  const k = hour < 12 ? ramp(5, 7, hour) : 1 - ramp(17, 19.5, hour);
+  return k * k * (3 - 2 * k);
+}
+
+// fixedHour (dari ?jam=21) mengunci waktu untuk pengujian; null mengikuti jam laptop.
+export function createOffice(container, config, { maxDelta = 0.05, quality = 'high', fixedHour = null } = {}) {
   const layout = computeLayout(config);
   const radius = Math.hypot(layout.width, layout.depth) / 2;
 
@@ -84,7 +93,8 @@ export function createOffice(container, config, { maxDelta = 0.05, quality = 'hi
   pmrem.dispose();
 
   // Cahaya utama hangat dari arah jendela, cahaya isi sejuk dari sisi berlawanan.
-  scene.add(new THREE.HemisphereLight('#f4f6ff', '#8a8378', 0.45));
+  const hemi = new THREE.HemisphereLight('#f4f6ff', '#8a8378', 0.45);
+  scene.add(hemi);
   const sun = new THREE.DirectionalLight('#fff1dc', 3.4);
   // Matahari agak rendah dari kanan agar bayangan cukup panjang dan jatuh menjauhi kamera.
   sun.position.set(radius * 0.85, radius * 0.65, radius * 0.2);
@@ -120,6 +130,42 @@ export function createOffice(container, config, { maxDelta = 0.05, quality = 'hi
   }
 
   const world = buildWorld(scene, layout, { name: config.name });
+
+  // ---------- Siang dan malam ----------
+  // Lampu ruangan: titik cahaya tanpa bayangan di atas tiap zona, menyala saat gelap.
+  const roomLights = world.lightSpots.map(([x, z]) => {
+    const light = new THREE.PointLight('#ffe3b3', 0, 22, 1.2);
+    light.position.set(x, 5, z);
+    scene.add(light);
+    return light;
+  });
+  const palette = {
+    dayBg: new THREE.Color('#c9cbcd'),
+    nightBg: new THREE.Color('#1c2230'),
+    daySun: new THREE.Color('#fff1dc'),
+    duskSun: new THREE.Color('#ffb070'),
+    moon: new THREE.Color('#9fb4ff'),
+    daySky: new THREE.Color('#bcd9ef'),
+    nightSky: new THREE.Color('#1a2338'),
+  };
+  let lastAmbience = 0;
+
+  function applyDaylight(now = new Date()) {
+    const hour = fixedHour ?? now.getHours() + now.getMinutes() / 60;
+    const day = daylightAt(hour);
+    const dusk = 1 - Math.abs(day - 0.5) * 2; // 1 saat tepat di tengah fajar/senja
+    scene.background.copy(palette.nightBg).lerp(palette.dayBg, day);
+    sun.color.copy(palette.moon).lerp(palette.daySun, day).lerp(palette.duskSun, dusk * 0.6);
+    sun.intensity = 0.45 + 2.95 * day;
+    hemi.intensity = 0.25 + 0.2 * day;
+    fill.intensity = 0.15 + 0.2 * day;
+    scene.environmentIntensity = 0.08 + 0.14 * day;
+    for (const light of roomLights) light.intensity = (1 - day) * 38;
+    world.ambience.sky.color.copy(palette.nightSky).lerp(palette.daySky, day);
+    world.ambience.sky.emissive.copy(world.ambience.sky.color);
+    world.ambience.clock.update(now);
+    return { hour, day };
+  }
 
   // --- Navigasi: semua perabot dan dinding menjadi rintangan ---
   scene.updateMatrixWorld(true);
@@ -382,6 +428,7 @@ export function createOffice(container, config, { maxDelta = 0.05, quality = 'hi
   }
   window.addEventListener('resize', resize);
   setQuality(quality);
+  let ambience = applyDaylight();
 
   // ---------- Interaksi: memilih karyawan, kamera mengikuti, terbang ke zona ----------
   let onSelect = () => {};
@@ -462,6 +509,11 @@ export function createOffice(container, config, { maxDelta = 0.05, quality = 'hi
     const dt = Math.min(timer.getDelta(), maxDelta);
     const t = timer.getElapsed();
     meetingActive = [...workers.values()].some((w) => w.goal === 'meeting');
+    // Pencahayaan dan jam dinding cukup diperbarui tiap 20 detik.
+    if (performance.now() - lastAmbience > 20000) {
+      lastAmbience = performance.now();
+      ambience = applyDaylight();
+    }
     for (const agent of agents.values()) syncWorker(ensureWorker(agent), agent, t, dt);
     updateCamera(dt);
     controls.update();
@@ -490,6 +542,7 @@ export function createOffice(container, config, { maxDelta = 0.05, quality = 'hi
       flight = { target: new THREE.Vector3(0, 1.5, 0), zoom: 1 };
     },
     floor: { width: layout.width, depth: layout.depth },
+    ambience: () => ambience,
     zones,
     positions: () => [...workers].map(([key, w]) => ({ key, x: w.x, z: w.z })),
     debug: { scene, renderer, camera, controls, sun },

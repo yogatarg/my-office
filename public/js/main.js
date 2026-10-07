@@ -35,7 +35,9 @@ try {
 const params = new URLSearchParams(location.search);
 if (QUALITY[params.get('quality')]) quality = params.get('quality');
 
-const office = createOffice(document.getElementById('stage'), config, { maxDelta: timerMode ? 1 : 0.05, quality });
+// ?jam=21 mengunci waktu siang/malam untuk mencoba suasana malam.
+const fixedHour = params.has('jam') ? Number(params.get('jam')) : null;
+const office = createOffice(document.getElementById('stage'), config, { maxDelta: timerMode ? 1 : 0.05, quality, fixedHour });
 
 // ?debug membuka objek Three.js di console untuk pemeriksaan.
 if (params.has('debug')) window.office = office;

@@ -157,5 +157,9 @@ Open plan seperti kantor modern: dinding hanya untuk ruangan yang butuh privasi.
 - Tombol **Kualitas** di header: *Tinggi* (ambient occlusion GTAO, bayangan 4096 lembut, resolusi penuh)
   atau *Ringan* (tanpa AO, bayangan 2048, resolusi 1x). Pilihan disimpan di browser.
 
-Parameter URL: `?quality=high|low` memaksa kualitas, `?timer` tetap merender di tab tersembunyi,
+- **Siang dan malam** mengikuti jam laptop: fajar 05.00–07.00, senja 17.00–19.30. Saat gelap, latar
+  menggelap, jendela ikut gelap, dan lampu ruangan menyala di atas tiap zona. Jam dinding di kafe menunjukkan
+  waktu sungguhan.
+
+Parameter URL: `?jam=22` mengunci waktu (untuk mencoba suasana malam), `?quality=high|low` memaksa kualitas, `?timer` tetap merender di tab tersembunyi,
 `?debug` membuka `window.office.debug` (scene, renderer, camera, sun) di console.

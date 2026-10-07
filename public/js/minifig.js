@@ -124,7 +124,22 @@ function createMagnifier() {
   return g;
 }
 
-function createArm(side, shirt) {
+// Papan klip dipegang tangan kiri: papan cokelat, kertas, dan penjepit logam.
+function createClipboard() {
+  const g = new THREE.Group();
+  g.add(solid(new THREE.BoxGeometry(0.5, 0.66, 0.04), plastic('#8a5a33')));
+  const paper = solid(new THREE.BoxGeometry(0.42, 0.52, 0.01), plastic('#fbfaf6'));
+  paper.position.set(0, -0.03, 0.025);
+  const clip = solid(new THREE.BoxGeometry(0.2, 0.08, 0.06), plastic('#9aa1a8', { metalness: 0.6, roughness: 0.3 }));
+  clip.position.set(0, 0.3, 0.03);
+  g.add(paper, clip);
+  // Dipasang miring terhadap tangan, sehingga saat lengan diangkat papan berdiri tegak di depan dada.
+  g.position.set(0, -0.95, 0.12);
+  g.rotation.set(1.35, 0, 0);
+  return g;
+}
+
+function createArm(side, shirt, rolledSleeves) {
   const pivot = new THREE.Group();
   pivot.position.set(side * 0.47, 0.93, 0);
 
@@ -139,6 +154,15 @@ function createArm(side, shirt) {
   hand.position.y = -0.9;
 
   pivot.add(shoulder, arm, wrist, hand);
+
+  // Lengan digulung: lengan bawah berwarna kulit dengan gulungan kain di atasnya.
+  if (rolledSleeves) {
+    const forearm = solid(new THREE.CylinderGeometry(0.163, 0.173, 0.3, 16), skin);
+    forearm.position.y = -0.56;
+    const cuff = solid(new THREE.CylinderGeometry(0.182, 0.182, 0.1, 16), shirt);
+    cuff.position.y = -0.38;
+    pivot.add(forearm, cuff);
+  }
   return pivot;
 }
 
@@ -174,8 +198,9 @@ export function createMinifig(style, seed = 1) {
   body.position.y = 0.575;
   torso.add(body);
 
-  const armL = createArm(1, shirt);
-  const armR = createArm(-1, shirt);
+  const accessories = [].concat(style.accessory ?? []);
+  const armL = createArm(1, shirt, style.sleeves === 'rolled');
+  const armR = createArm(-1, shirt, style.sleeves === 'rolled');
   torso.add(armL, armR);
 
   const head = new THREE.Group();
@@ -184,15 +209,18 @@ export function createMinifig(style, seed = 1) {
 
   const neck = solid(new THREE.CylinderGeometry(0.16, 0.16, 0.12, 16), skin);
   neck.position.y = 0.05;
-  const faceMat = plastic('#ffffff', { map: faceTexture(style.face) });
+  const faceMat = plastic('#ffffff', { map: faceTexture(style.face, { glasses: accessories.includes('glasses') }) });
   // thetaStart = -π menaruh tengah tekstur (wajah) tepat di depan (+z).
   const skull = solid(new THREE.CylinderGeometry(0.36, 0.36, 0.62, 40, 1, false, -Math.PI, Math.PI * 2), [faceMat, skin, skin]);
   skull.position.y = 0.41;
   head.add(neck, skull, createHair(style.hair, seed));
 
-  if (style.accessory === 'headset') head.add(createHeadset());
-  if (style.accessory === 'beret') head.add(createBeret());
-  if (style.accessory === 'magnifier') armL.add(createMagnifier());
+  if (accessories.includes('headset')) head.add(createHeadset());
+  if (accessories.includes('beret')) head.add(createBeret());
+  if (accessories.includes('magnifier')) armL.add(createMagnifier());
+  // Papan klip hanya terlihat saat berdiri; saat duduk tangan berada di atas meja.
+  const clipboard = accessories.includes('clipboard') ? createClipboard() : null;
+  if (clipboard) armL.add(clipboard);
 
   // Kertas yang hanya muncul ketika karakter sedang membaca.
   const paper = solid(new THREE.BoxGeometry(0.5, 0.64, 0.02), plastic('#fbfaf6'));
@@ -208,7 +236,7 @@ export function createMinifig(style, seed = 1) {
   armR.add(mug);
 
   // legs[0] di sisi -x adalah kaki kanan karakter.
-  root.userData.joints = { legR: legs[0], legL: legs[1], torso, head, armL, armR, paper, mug };
+  root.userData.joints = { legR: legs[0], legL: legs[1], torso, head, armL, armR, paper, mug, clipboard };
   root.userData.pose = { torso: 0, headX: 0, headY: 0, armLx: -0.1, armLz: 0.1, armRx: -0.1, armRz: -0.1, legL: 0, legR: 0 };
   return root;
 }
@@ -252,10 +280,12 @@ function seatedPose(status, t) {
   return p;
 }
 
-function standingPose(status, t) {
+function standingPose(status, t, holdsClipboard) {
   const p = { torso: 0, headX: 0, headY: Math.sin(t * 0.6) * 0.15, armLx: -0.08, armLz: 0.1, armRx: -0.08, armRz: -0.1, legL: 0, legR: 0 };
   if (status === 'reporting') Object.assign(p, { armRx: -2.85, armRz: -0.25 + Math.sin(t * 7) * 0.22, headX: -0.1 });
   if (status === 'asleep') Object.assign(p, { armRx: -1.0, armRz: 0.12, headX: 0.05, mug: true });
+  // Pemegang papan klip mengangkatnya di depan dada sambil sesekali melirik catatannya.
+  if (holdsClipboard) Object.assign(p, { armLx: -1.15, armLz: -0.15, headX: 0.12 + Math.max(0, Math.sin(t * 0.5)) * 0.15 });
   return p;
 }
 
@@ -266,9 +296,9 @@ function walkingPose(phase) {
 
 // motion: { sit: 0..1, walking: boolean, phase: sudut langkah }
 export function poseMinifig(fig, status, t, dt, motion) {
-  const { legL, legR, torso, head, armL, armR, paper, mug } = fig.userData.joints;
+  const { legL, legR, torso, head, armL, armR, paper, mug, clipboard } = fig.userData.joints;
   const pose = fig.userData.pose;
-  const target = motion.walking ? walkingPose(motion.phase) : motion.sit > 0.5 ? seatedPose(status, t) : standingPose(status, t);
+  const target = motion.walking ? walkingPose(motion.phase) : motion.sit > 0.5 ? seatedPose(status, t) : standingPose(status, t, Boolean(clipboard));
   const k = 1 - Math.exp(-dt * (motion.walking ? 16 : 9));
   for (const key of Object.keys(pose)) pose[key] += (target[key] - pose[key]) * k;
 
@@ -280,4 +310,5 @@ export function poseMinifig(fig, status, t, dt, motion) {
   legR.rotation.x = pose.legR;
   paper.visible = Boolean(target.paper);
   mug.visible = Boolean(target.mug);
+  if (clipboard) clipboard.visible = motion.walking || motion.sit < 0.5;
 }

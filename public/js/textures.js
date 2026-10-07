@@ -18,7 +18,7 @@ function toTexture(c) {
 }
 
 // Tekstur melingkari seluruh silinder kepala; wajah berada di tengah (u = 0.5).
-export function faceTexture(variant) {
+export function faceTexture(variant, { glasses = false } = {}) {
   const [c, g] = canvas(1024, 256);
   g.fillStyle = SKIN;
   g.fillRect(0, 0, 1024, 256);
@@ -80,7 +80,61 @@ export function faceTexture(variant) {
       brow(cx + 30, 80, cx + 96, 82, 66);
       mouth(() => { g.moveTo(cx - 34, 172); g.quadraticCurveTo(cx, 208, cx + 34, 172); });
   }
+
+  if (glasses) {
+    g.strokeStyle = '#2a2420';
+    g.lineWidth = 7;
+    for (const s of [-1, 1]) {
+      g.beginPath();
+      g.roundRect(cx + s * 60 - 38, ey - 28, 76, 56, 14);
+      g.stroke();
+    }
+    g.beginPath();
+    g.moveTo(cx - 22, ey - 6);
+    g.quadraticCurveTo(cx, ey - 16, cx + 22, ey - 6);
+    g.stroke();
+  }
   return toTexture(c);
+}
+
+// Kerah kemeja di tengah atas badan: leher kuning berbentuk V, garis kerah, lalu dasi atau kancing.
+function collarShirt(g, { tie = null, tieLength = 300, buttons = false }) {
+  g.fillStyle = SKIN;
+  g.beginPath();
+  g.moveTo(186, 0);
+  g.lineTo(256, 112);
+  g.lineTo(326, 0);
+  g.fill();
+
+  g.strokeStyle = INK;
+  g.lineWidth = 5;
+  g.lineJoin = 'round';
+  g.beginPath();
+  g.moveTo(176, 0); g.lineTo(146, 62); g.lineTo(232, 98); g.lineTo(256, 116);
+  g.moveTo(336, 0); g.lineTo(366, 62); g.lineTo(280, 98); g.lineTo(256, 116);
+  g.stroke();
+
+  if (tie) {
+    g.fillStyle = tie;
+    g.beginPath();
+    g.moveTo(240, 100); g.lineTo(272, 100); g.lineTo(266, 132); g.lineTo(246, 132);
+    g.fill();
+    g.beginPath();
+    g.moveTo(246, 132); g.lineTo(266, 132); g.lineTo(284, 100 + tieLength - 38); g.lineTo(256, 100 + tieLength); g.lineTo(228, 100 + tieLength - 38);
+    g.fill();
+  }
+  if (buttons) {
+    g.beginPath();
+    g.moveTo(256, 116); g.lineTo(256, 512);
+    g.stroke();
+    g.fillStyle = '#f4f2ec';
+    for (const y of [170, 250, 330, 410]) {
+      g.beginPath();
+      g.arc(256, y, 9, 0, Math.PI * 2);
+      g.fill();
+      g.stroke();
+    }
+  }
 }
 
 // Sablon bagian depan badan, mengikuti identitas setiap peran.
@@ -98,31 +152,60 @@ export function torsoTexture(style) {
   g.stroke();
 
   if (style.print === 'tie') {
-    // Kemeja berkerah, dasi, dan saku seperti foto acuan.
-    g.fillStyle = SKIN;
-    g.beginPath();
-    g.moveTo(186, 0);
-    g.lineTo(256, 112);
-    g.lineTo(326, 0);
-    g.fill();
-
-    g.strokeStyle = INK;
-    g.lineWidth = 5;
-    g.lineJoin = 'round';
-    g.beginPath();
-    g.moveTo(176, 0); g.lineTo(146, 62); g.lineTo(232, 98); g.lineTo(256, 116);
-    g.moveTo(336, 0); g.lineTo(366, 62); g.lineTo(280, 98); g.lineTo(256, 116);
-    g.stroke();
-
-    g.fillStyle = '#22324a';
-    g.beginPath();
-    g.moveTo(240, 100); g.lineTo(272, 100); g.lineTo(266, 132); g.lineTo(246, 132);
-    g.fill();
-    g.beginPath();
-    g.moveTo(246, 132); g.lineTo(266, 132); g.lineTo(284, 380); g.lineTo(256, 418); g.lineTo(228, 380);
-    g.fill();
-
+    // Kemeja berkerah, dasi, dan saku.
+    collarShirt(g, { tie: style.tie ?? '#22324a' });
     g.strokeRect(330, 196, 92, 82);
+    return toTexture(c);
+  }
+
+  if (style.print === 'shirt') {
+    // Kemeja berkancing tanpa dasi, pulpen terselip di saku.
+    collarShirt(g, { buttons: true });
+    g.strokeRect(330, 196, 92, 82);
+    g.fillStyle = '#2f6db5';
+    g.fillRect(352, 168, 10, 60);
+    return toTexture(c);
+  }
+
+  if (style.print === 'suit') {
+    // Jas (warna dasar = style.shirt) terbuka di dada, memperlihatkan kemeja putih dan dasi.
+    g.fillStyle = '#f4f2ec';
+    g.beginPath();
+    g.moveTo(150, 0); g.lineTo(256, 250); g.lineTo(362, 0);
+    g.fill();
+    collarShirt(g, { tie: style.tie ?? '#7a1f2b', tieLength: 240 });
+
+    // Kerah jas: dua segitiga sedikit lebih gelap dari jas, menempel di tepi bukaan.
+    const lapel = new THREE.Color(style.shirt).multiplyScalar(0.72);
+    g.fillStyle = `#${lapel.getHexString()}`;
+    for (const s of [-1, 1]) {
+      g.beginPath();
+      g.moveTo(256 + s * 106, 0);
+      g.lineTo(256 + s * 132, 70);
+      g.lineTo(256 + s * 70, 120);
+      g.lineTo(256 + s * 8, 250);
+      g.fill();
+    }
+    g.strokeStyle = 'rgba(0,0,0,.35)';
+    g.lineWidth = 4;
+    g.beginPath();
+    g.moveTo(256, 250); g.lineTo(256, 512);
+    g.stroke();
+    g.fillStyle = 'rgba(0,0,0,.55)';
+    for (const y of [310, 390]) {
+      g.beginPath();
+      g.arc(280, y, 9, 0, Math.PI * 2);
+      g.fill();
+    }
+    // Saputangan saku di dada kiri karakter (sisi kanan gambar).
+    g.fillStyle = '#f4f2ec';
+    g.beginPath();
+    g.moveTo(352, 200); g.lineTo(404, 200); g.lineTo(392, 176); g.lineTo(374, 188); g.lineTo(362, 174);
+    g.fill();
+    g.strokeStyle = 'rgba(0,0,0,.3)';
+    g.beginPath();
+    g.moveTo(340, 202); g.lineTo(416, 202);
+    g.stroke();
     return toTexture(c);
   }
 

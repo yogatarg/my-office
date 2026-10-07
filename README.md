@@ -26,7 +26,7 @@ Setiap payload hook disimpan mentah di `logs/events.jsonl`.
 - [x] **Tahap 1** — hooks → server → event log di browser (tanpa grafis)
 - [x] **Tahap 2** — kantor 3D statis, minifigure berganti status
 - [x] **Tahap 3** — karakter berjalan, gelembung chat, melapor di ruang rapat
-- [ ] **Tampilan realistis** — denah dari konfigurasi ✔, material & pencahayaan ✔, CEO & PM
+- [x] **Tampilan realistis** — denah dari konfigurasi, material & pencahayaan, CEO & PM
 
 ## Temuan Tahap 1 (Claude Code 2.1.289)
 
@@ -61,8 +61,17 @@ Kantor dibangun dari file ini, jadi menambah divisi atau peran tidak perlu mengu
 }
 ```
 
-Field penampilan peran: `label`, `shirt`, `pants`, `hair`, `face` (`smile`, `grin`, `stern`, `skeptic`),
-`print` (`tie`, `braces`, `tag`, `check`, `letter`), `accessory` (`headset`, `beret`, `magnifier`).
+Field penampilan peran:
+
+| Field | Nilai |
+|---|---|
+| `label` | nama di label |
+| `shirt`, `pants`, `hair` | warna (untuk `suit`, `shirt` adalah warna jas) |
+| `face` | `smile`, `grin`, `stern`, `skeptic` |
+| `print` | `tie`, `shirt`, `suit`, `braces`, `tag`, `check`, `letter` |
+| `tie` | warna dasi untuk `tie` dan `suit` |
+| `sleeves` | `rolled` untuk lengan digulung |
+| `accessory` | satu nilai atau daftar: `headset`, `beret`, `magnifier`, `glasses`, `clipboard` |
 Muat ulang halaman setelah mengubah file ini.
 
 ## Struktur kode

@@ -1,13 +1,6 @@
 {
   "name": "MY Office",
-  "lead": {
-    "label": "CEO",
-    "shirt": "#f4f2ec",
-    "pants": "#1b1b1b",
-    "hair": "#161616",
-    "face": "stern",
-    "print": "tie"
-  },
+  "lead": { "label": "CEO", "shirt": "#2b313c", "pants": "#1b1b1b", "hair": "#161616", "face": "stern", "print": "suit", "tie": "#7a1f2b" },
   "divisions": [
     {
       "id": "management",
@@ -15,7 +8,7 @@
       "color": "#3d4a5c",
       "desks": 2,
       "roles": {
-        "pm": { "label": "PM", "shirt": "#7fa7d9", "pants": "#3a3f4b", "hair": "#5a3a22", "face": "smile" }
+        "pm": { "label": "PM", "shirt": "#a9cbe8", "pants": "#3a3f4b", "hair": "#6b4423", "face": "smile", "print": "shirt", "sleeves": "rolled", "accessory": ["glasses", "clipboard"] }
       }
     },
     {
@@ -29,9 +22,31 @@
         "qa": { "label": "QA", "shirt": "#2e9c5a", "pants": "#2b2b2b", "hair": "#161616", "face": "skeptic", "print": "check", "accessory": "magnifier" }
       }
     },
-    { "id": "design", "name": "Design", "color": "#8e5bb5", "desks": 4, "roles": {} },
-    { "id": "data", "name": "Data", "color": "#1f9a8a", "desks": 4, "roles": {} },
-    { "id": "devops", "name": "DevOps", "color": "#c0602b", "desks": 4, "roles": {} }
+    {
+      "id": "design",
+      "name": "Design",
+      "color": "#8e5bb5",
+      "desks": 4,
+      "roles": {}
+    },
+    {
+      "id": "data",
+      "name": "Data",
+      "color": "#1f9a8a",
+      "desks": 4,
+      "roles": {}
+    },
+    {
+      "id": "devops",
+      "name": "DevOps",
+      "color": "#c0602b",
+      "desks": 4,
+      "roles": {}
+    }
   ],
-  "fallback": { "name": "Umum", "color": "#7a7f87", "desks": 4 }
+  "fallback": {
+    "name": "Umum",
+    "color": "#7a7f87",
+    "desks": 4
+  }
 }

@@ -365,5 +365,5 @@ export function createOffice(container, config, { maxDelta = 0.05, quality = 'hi
     labels.render(scene, camera);
   }
 
-  return { render, setQuality, debug: { scene, renderer, camera, sun } };
+  return { render, setQuality, debug: { scene, renderer, camera, controls, sun } };
 }

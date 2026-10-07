@@ -19,7 +19,8 @@ const mats = {
   leather: plastic('#5b4636', { roughness: 0.55 }),
   green: plastic('#3f8f4a'),
   pot: plastic('#d9d4cb'),
-  glass: new THREE.MeshPhysicalMaterial({ color: '#dcebf5', transparent: true, opacity: 0.22, roughness: 0.05, metalness: 0, depthWrite: false }),
+  // Kaca bening: hampir transparan, tetapi memantulkan lingkungan di sudut miring.
+  glass: new THREE.MeshPhysicalMaterial({ color: '#e4f0f7', transparent: true, opacity: 0.16, roughness: 0.04, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.05, depthWrite: false }),
 };
 
 function solid(geometry, material, x = 0, y = 0, z = 0) {
@@ -32,17 +33,24 @@ function solid(geometry, material, x = 0, y = 0, z = 0) {
 
 const rbox = (w, h, d, r = 0.05) => new RoundedBoxGeometry(w, h, d, 2, r);
 
-// Tekstur berulang: satu ubin tekstur = 2x2 stud.
-function surface(texture, w, d) {
+// Tekstur berulang: satu ubin tekstur = 2x2 stud. finish menentukan kilap permukaan:
+// tile plastik licin sedikit memantul, kayu agak berkilap, karpet kusam.
+const FINISH = {
+  tile: { roughness: 0.42, clearcoat: 0.25, clearcoatRoughness: 0.3 },
+  wood: { roughness: 0.5, clearcoat: 0.35, clearcoatRoughness: 0.25 },
+  carpet: { roughness: 0.95, clearcoat: 0 },
+};
+
+function surface(texture, w, d, finish = 'tile') {
   const t = texture.clone();
   t.needsUpdate = true;
   t.repeat.set(w / 2, d / 2);
-  return new THREE.MeshStandardMaterial({ map: t, roughness: 0.7 });
+  return new THREE.MeshPhysicalMaterial({ map: t, metalness: 0, ...FINISH[finish] });
 }
 
 // Lapisan lantai tipis di atas lantai dasar (karpet, kayu) agar tiap zona terbedakan.
-function floorPatch(scene, texture, x0, z0, w, d, inset = 0.2) {
-  const patch = new THREE.Mesh(new THREE.BoxGeometry(w - inset * 2, 0.04, d - inset * 2), surface(texture, w, d));
+function floorPatch(scene, texture, finish, x0, z0, w, d, inset = 0.2) {
+  const patch = new THREE.Mesh(new THREE.BoxGeometry(w - inset * 2, 0.04, d - inset * 2), surface(texture, w, d, finish));
   patch.position.set(x0 + w / 2, 0.02, z0 + d / 2);
   patch.receiveShadow = true;
   scene.add(patch);
@@ -125,7 +133,7 @@ function createBookshelf(width) {
 
 function signBoard(name, color, width = 2.8) {
   const g = new THREE.Group();
-  const face = new THREE.MeshStandardMaterial({ map: signTexture(name, color), roughness: 0.4 });
+  const face = plastic('#ffffff', { map: signTexture(name, color) });
   g.add(solid(new THREE.BoxGeometry(width, width * 0.31, 0.12), [mats.white, mats.white, mats.white, mats.white, face, mats.white], 0, 0, 0));
   return g;
 }
@@ -172,7 +180,8 @@ function glassWall(scene, blockers, [ax, az], [bx, bz], door = 0) {
 
 function buildRoom(scene, room, parts) {
   const { x0, z0, w, d } = room;
-  floorPatch(scene, room.kind === 'ceo' ? woodTexture() : carpetTexture('#59606b'), x0, z0, w, d, 0.1);
+  if (room.kind === 'ceo') floorPatch(scene, woodTexture(), 'wood', x0, z0, w, d, 0.1);
+  else floorPatch(scene, carpetTexture('#59606b'), 'carpet', x0, z0, w, d, 0.1);
 
   glassWall(scene, parts.blockers, [x0, z0 + d], [x0 + w, z0 + d], 2.4);
   if (x0 > -parts.width / 2 + 0.1) glassWall(scene, parts.blockers, [x0, z0], [x0, z0 + d]);
@@ -230,7 +239,7 @@ function buildRoom(scene, room, parts) {
 // ---------- Zona ----------
 
 function buildDivision(scene, zone, parts) {
-  floorPatch(scene, carpetTexture(zone.color), zone.x0, zone.z0, zone.w, zone.d);
+  floorPatch(scene, carpetTexture(zone.color), 'carpet', zone.x0, zone.z0, zone.w, zone.d);
   const desks = zone.slots.map((slot) => {
     const desk = createDesk();
     desk.group.position.set(slot.x, 0, slot.z);
@@ -253,7 +262,7 @@ function buildDivision(scene, zone, parts) {
 }
 
 function buildPantry(scene, zone, parts) {
-  floorPatch(scene, woodTexture(), zone.x0, zone.z0, zone.w, zone.d);
+  floorPatch(scene, woodTexture(), 'wood', zone.x0, zone.z0, zone.w, zone.d);
   const cx = zone.x0 + zone.w / 2;
   const back = zone.z0 + 1.0;
 

@@ -1,5 +1,5 @@
 import { createTracker } from './agents.js';
-import { createOffice } from './office.js';
+import { createOffice, QUALITY } from './office.js';
 import { loadConfig } from './config.js';
 
 const FEED_LIMIT = 7;
@@ -25,7 +25,31 @@ document.querySelector('h1').textContent = config.name;
 
 const tracker = createTracker(config);
 const timerMode = new URLSearchParams(location.search).has('timer');
-const office = createOffice(document.getElementById('stage'), config, { maxDelta: timerMode ? 1 : 0.05 });
+// Pilihan kualitas diingat per browser; penyimpanan bisa diblokir, jadi selalu dibungkus try/catch.
+const QUALITY_KEY = 'my-office-quality';
+let quality = 'high';
+try {
+  if (QUALITY[localStorage.getItem(QUALITY_KEY)]) quality = localStorage.getItem(QUALITY_KEY);
+} catch {}
+const params = new URLSearchParams(location.search);
+if (QUALITY[params.get('quality')]) quality = params.get('quality');
+
+const office = createOffice(document.getElementById('stage'), config, { maxDelta: timerMode ? 1 : 0.05, quality });
+
+// ?debug membuka objek Three.js di console untuk pemeriksaan.
+if (params.has('debug')) window.office = office;
+
+const qualityButton = document.getElementById('quality');
+const showQuality = () => (qualityButton.textContent = `Kualitas: ${QUALITY[quality].label}`);
+showQuality();
+qualityButton.addEventListener('click', () => {
+  quality = quality === 'high' ? 'low' : 'high';
+  office.setQuality(quality);
+  showQuality();
+  try {
+    localStorage.setItem(QUALITY_KEY, quality);
+  } catch {}
+});
 
 function handle(event, now) {
   const text = tracker.apply(event, now);

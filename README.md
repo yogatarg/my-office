@@ -26,7 +26,7 @@ Setiap payload hook disimpan mentah di `logs/events.jsonl`.
 - [x] **Tahap 1** — hooks → server → event log di browser (tanpa grafis)
 - [x] **Tahap 2** — kantor 3D statis, minifigure berganti status
 - [x] **Tahap 3** — karakter berjalan, gelembung chat, melapor di ruang rapat
-- [ ] **Tampilan realistis** — denah dari konfigurasi ✔, material & pencahayaan, CEO & PM
+- [ ] **Tampilan realistis** — denah dari konfigurasi ✔, material & pencahayaan ✔, CEO & PM
 
 ## Temuan Tahap 1 (Claude Code 2.1.289)
 
@@ -85,3 +85,13 @@ Muat ulang halaman setelah mengubah file ini.
 - `SubagentHandback` → berjalan ke ruang rapat dan melapor (gelembung berisi baris pertama laporan).
 - Setelah selesai, rehat sebentar di **pantry** lalu kembali ke meja.
 - Jalur dihitung dengan A* agar karakter memutari meja, perabot, dan dinding kaca.
+
+## Grafis
+
+- Plastik memakai `MeshPhysicalMaterial` dengan clearcoat tipis dan pantulan lingkungan (`RoomEnvironment`).
+- Lantai: tile sedikit berkilap, kayu berkilap halus, karpet kusam. Kaca memantulkan lingkungan di sudut miring.
+- Tombol **Kualitas** di header: *Tinggi* (ambient occlusion GTAO, bayangan 4096 lembut, resolusi penuh)
+  atau *Ringan* (tanpa AO, bayangan 2048, resolusi 1x). Pilihan disimpan di browser.
+
+Parameter URL: `?quality=high|low` memaksa kualitas, `?timer` tetap merender di tab tersembunyi,
+`?debug` membuka `window.office.debug` (scene, renderer, camera, sun) di console.

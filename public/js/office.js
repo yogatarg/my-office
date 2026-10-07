@@ -1,6 +1,11 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { createMinifig, poseMinifig } from './minifig.js';
 import { STATUS } from './agents.js';
 import { createNav } from './nav.js';
@@ -12,6 +17,12 @@ const STAND_HEIGHT = 1.11; // tinggi sendi pinggul saat berdiri
 const WALK_SPEED = 3.6; // satuan per detik
 const MEETING_MS = 4500; // lama berdiri melapor di ruang rapat, dihitung sejak tiba
 const CAMERA_DIR = new THREE.Vector3(17, 19, 24).normalize();
+
+// Preset kualitas. "high" menambah ambient occlusion, bayangan tajam-halus, dan resolusi penuh.
+export const QUALITY = {
+  high: { label: 'Tinggi', ao: true, pixelRatio: 2, shadowMap: 4096, shadowRadius: 3 },
+  low: { label: 'Ringan', ao: false, pixelRatio: 1, shadowMap: 2048, shadowRadius: 1 },
+};
 
 const CHATTER = [
   'Kopi dulu ☕',
@@ -32,12 +43,12 @@ function createLabel(style) {
 }
 
 // maxDelta membatasi langkah waktu per frame agar animasi tidak melompat setelah tab tertunda.
-export function createOffice(container, config, { maxDelta = 0.05 } = {}) {
+export function createOffice(container, config, { maxDelta = 0.05, quality = 'high' } = {}) {
   const layout = computeLayout(config);
   const radius = Math.hypot(layout.width, layout.depth) / 2;
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color('#c4c6c9');
+  scene.background = new THREE.Color('#c9cbcd');
 
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -66,15 +77,47 @@ export function createOffice(container, config, { maxDelta = 0.05 } = {}) {
   controls.maxZoom = 6;
   controls.screenSpacePanning = true;
 
-  scene.add(new THREE.HemisphereLight('#ffffff', '#8d8a86', 1.5));
-  const sun = new THREE.DirectionalLight('#fff6e8', 2.4);
-  sun.position.set(radius * 0.4, radius * 0.9, radius * 0.5);
+  // Pantulan lingkungan: ruangan terang generik, membuat plastik dan kaca tampak berkilap nyata.
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  scene.environmentIntensity = 0.22;
+  pmrem.dispose();
+
+  // Cahaya utama hangat dari arah jendela, cahaya isi sejuk dari sisi berlawanan.
+  scene.add(new THREE.HemisphereLight('#f4f6ff', '#8a8378', 0.45));
+  const sun = new THREE.DirectionalLight('#fff1dc', 3.4);
+  // Matahari agak rendah dari kanan agar bayangan cukup panjang dan jatuh menjauhi kamera.
+  sun.position.set(radius * 0.85, radius * 0.65, radius * 0.2);
   sun.castShadow = true;
-  sun.shadow.mapSize.set(4096, 4096);
   Object.assign(sun.shadow.camera, { left: -radius, right: radius, top: radius, bottom: -radius, near: 1, far: radius * 3 });
-  sun.shadow.bias = -0.0005;
-  sun.shadow.normalBias = 0.03;
+  sun.shadow.bias = -0.0004;
+  sun.shadow.normalBias = 0.04;
   scene.add(sun);
+  const fill = new THREE.DirectionalLight('#dbe6ff', 0.35);
+  fill.position.set(-radius * 0.6, radius * 0.5, -radius * 0.2);
+  scene.add(fill);
+
+  // Pascaproses: ambient occlusion menggelapkan sudut dan sambungan (kunci kesan "nyata"),
+  // lalu OutputPass menerapkan tone mapping dan ruang warna.
+  const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { samples: 4, type: THREE.HalfFloatType }));
+  composer.addPass(new RenderPass(scene, camera));
+  const ao = new GTAOPass(scene, camera, 1, 1);
+  ao.updateGtaoMaterial({ radius: 1.6, distanceExponent: 1.4, thickness: 1.2, scale: 1.1, samples: 16 });
+  ao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 16 });
+  ao.blendIntensity = 0.9;
+  composer.addPass(ao);
+  composer.addPass(new OutputPass());
+
+  let preset = QUALITY[quality] ?? QUALITY.high;
+  function setQuality(name) {
+    preset = QUALITY[name] ?? QUALITY.high;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, preset.pixelRatio));
+    sun.shadow.mapSize.set(preset.shadowMap, preset.shadowMap);
+    sun.shadow.radius = preset.shadowRadius;
+    sun.shadow.map?.dispose();
+    sun.shadow.map = null; // dibuat ulang dengan ukuran baru pada render berikutnya
+    resize();
+  }
 
   const world = buildWorld(scene, layout);
 
@@ -303,10 +346,12 @@ export function createOffice(container, config, { maxDelta = 0.05 } = {}) {
     Object.assign(camera, { left: (-viewH * aspect) / 2, right: (viewH * aspect) / 2, top: viewH / 2, bottom: -viewH / 2 });
     camera.updateProjectionMatrix();
     renderer.setSize(w, h);
+    composer.setPixelRatio(renderer.getPixelRatio());
+    composer.setSize(w, h);
     labels.setSize(w, h);
   }
   window.addEventListener('resize', resize);
-  resize();
+  setQuality(quality);
 
   const timer = new THREE.Timer();
   function render(agents) {
@@ -315,9 +360,10 @@ export function createOffice(container, config, { maxDelta = 0.05 } = {}) {
     const t = timer.getElapsed();
     for (const agent of agents.values()) syncWorker(ensureWorker(agent), agent, t, dt);
     controls.update();
-    renderer.render(scene, camera);
+    if (preset.ao) composer.render(dt);
+    else renderer.render(scene, camera);
     labels.render(scene, camera);
   }
 
-  return { render };
+  return { render, setQuality, debug: { scene, renderer, camera, sun } };
 }

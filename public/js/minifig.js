@@ -5,8 +5,17 @@ import { faceTexture, torsoTexture, SKIN } from './textures.js';
 // Satuan: 1 = jarak antar stud. Titik asal figur ada di sendi pinggul,
 // figur menghadap +z, dan tangan kiri karakter berada di sisi +x.
 
+// Plastik ABS: dasar agak kesat dengan lapisan clearcoat tipis yang memantulkan lingkungan,
+// sehingga sorotan cahaya terlihat seperti pada mainan sungguhan.
 export const plastic = (color, extra = {}) =>
-  new THREE.MeshStandardMaterial({ color: new THREE.Color(color), roughness: 0.3, metalness: 0, ...extra });
+  new THREE.MeshPhysicalMaterial({
+    color: new THREE.Color(color),
+    roughness: 0.38,
+    metalness: 0,
+    clearcoat: 0.55,
+    clearcoatRoughness: 0.18,
+    ...extra,
+  });
 
 const skin = plastic(SKIN);
 const dark = plastic('#232323');
@@ -160,7 +169,7 @@ export function createMinifig(style, seed = 1) {
   torso.position.y = 0.17;
   root.add(torso);
 
-  const front = new THREE.MeshStandardMaterial({ map: torsoTexture(style), roughness: 0.3 });
+  const front = plastic('#ffffff', { map: torsoTexture(style) });
   const body = solid(torsoGeometry(), [shirt, shirt, shirt, shirt, front, shirt]);
   body.position.y = 0.575;
   torso.add(body);
@@ -175,7 +184,7 @@ export function createMinifig(style, seed = 1) {
 
   const neck = solid(new THREE.CylinderGeometry(0.16, 0.16, 0.12, 16), skin);
   neck.position.y = 0.05;
-  const faceMat = new THREE.MeshStandardMaterial({ map: faceTexture(style.face), roughness: 0.28 });
+  const faceMat = plastic('#ffffff', { map: faceTexture(style.face) });
   // thetaStart = -π menaruh tengah tekstur (wajah) tepat di depan (+z).
   const skull = solid(new THREE.CylinderGeometry(0.36, 0.36, 0.62, 40, 1, false, -Math.PI, Math.PI * 2), [faceMat, skin, skin]);
   skull.position.y = 0.41;

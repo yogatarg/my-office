@@ -27,6 +27,22 @@ Setiap event hook disimpan di `logs/events.jsonl` (tidak ikut ke git) dalam bent
 - Bila file melewati 5 MB, file diganti nama menjadi `events-<waktu>.jsonl`; hanya 5 arsip terbaru disimpan.
   Atur dengan variabel lingkungan `LOG_MAX_MB` dan `LOG_KEEP`.
 
+## Kantor pusat (HQ)
+
+Folder `playground` adalah kantor pusat: semua perintah diberikan dari sini, lalu CEO (agen utama)
+mengatur tim untuk membuat atau mengerjakan proyek di folder workspace.
+
+```bash
+npm run sync                          # selaraskan hooks, izin workspace, dan file agen dengan office.config.json
+cd playground && claude               # beri perintah, mis. "buatkan website toko kue sederhana"
+```
+
+- `workspace` di `office.config.json` (bawaan `C:/laragon/www`) diberikan ke Claude Code lewat
+  `permissions.additionalDirectories`. Setiap edit dan perintah tetap meminta izin seperti biasa.
+- `playground/CLAUDE.md` adalah pedoman CEO: alur proyek baru (PM → DevOps → divisi → QA → laporan).
+- `npm run sync` membuat `.claude/agents/<peran>.md` untuk peran baru di konfigurasi; file yang sudah ada tidak ditimpa.
+- Kantor mengenali proyek yang sedang dikerjakan dari path file dan menampilkannya di header.
+
 ## Tahapan
 
 - [x] **Tahap 1** — hooks → server → event log di browser (tanpa grafis)

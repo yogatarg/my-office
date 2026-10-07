@@ -51,8 +51,16 @@ qualityButton.addEventListener('click', () => {
   } catch {}
 });
 
+const projectChip = document.getElementById('project');
+function showProject() {
+  const name = tracker.state.project;
+  projectChip.hidden = !name;
+  if (name) projectChip.textContent = `Proyek: ${name}`;
+}
+
 function handle(event, now) {
   const text = tracker.apply(event, now);
+  showProject();
   if (!text) return;
   const agent = tracker.agents.get(event.agent_type ?? 'main');
   pushFeed(text, agent.style.accent, new Date(event.received_at ?? now));

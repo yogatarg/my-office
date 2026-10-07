@@ -63,9 +63,30 @@ export function firstLine(text, max = 90) {
   return line.length > max ? line.slice(0, max - 1) + '…' : line;
 }
 
+// Mengenali proyek dari path di tool_input: segmen pertama setelah folder workspace.
+// Menerima gaya Windows (C:\laragon\www) maupun Git Bash (/c/laragon/www).
+export function projectFinder(workspace, ignore = ['my-office']) {
+  if (!workspace) return () => null;
+  const base = workspace.replace(/\\/g, '/').replace(/\/+$/, '');
+  const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\export function createTracker(config) {');
+  const bash = base.replace(/^([A-Za-z]):/, (m, d) => `/${d.toLowerCase()}`);
+  const pattern = new RegExp(`(?:${escape(base)}|${escape(bash)})/([^/\\s"'\`]+)`, 'i');
+  return (e) => {
+    const input = e.tool_input ?? {};
+    for (const text of [input.file_path, input.path, input.notebook_path, input.command, input.prompt]) {
+      if (!text) continue;
+      const match = String(text).replace(/\\/g, '/').match(pattern);
+      if (match && !ignore.includes(match[1].toLowerCase())) return match[1];
+    }
+    return null;
+  };
+}
+
 export function createTracker(config) {
   const agents = new Map();
   const lead = config.lead.label;
+  const projectOf = projectFinder(config.workspace);
+  const state = { project: null }; // proyek yang terakhir disentuh tim
 
   function styleFor(key) {
     if (key === 'main') return config.lead;
@@ -124,6 +145,11 @@ export function createTracker(config) {
     if (e.agent_id && !e.agent_type) return null;
     const agent = get(e.agent_type ?? 'main');
     const name = agent.style.label;
+    const project = projectOf(e);
+    if (project) {
+      agent.project = project;
+      state.project = project;
+    }
 
     switch (e.hook_event_name) {
       case 'SessionStart':
@@ -208,5 +234,5 @@ export function createTracker(config) {
     }
   }
 
-  return { agents, apply, tick };
+  return { agents, apply, tick, state };
 }

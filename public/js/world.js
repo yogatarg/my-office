@@ -49,9 +49,10 @@ function surface(texture, w, d, finish = 'tile') {
 }
 
 // Lapisan lantai tipis di atas lantai dasar (karpet, kayu) agar tiap zona terbedakan.
-function floorPatch(scene, texture, finish, x0, z0, w, d, inset = 0.2) {
+// lift menaikkan lapisan yang ditumpuk di atas lapisan lain (mis. karpet di atas kayu) agar tidak berkedip.
+function floorPatch(scene, texture, finish, x0, z0, w, d, inset = 0.2, lift = 0) {
   const patch = new THREE.Mesh(new THREE.BoxGeometry(w - inset * 2, 0.04, d - inset * 2), surface(texture, w, d, finish));
-  patch.position.set(x0 + w / 2, 0.02, z0 + d / 2);
+  patch.position.set(x0 + w / 2, 0.02 + lift, z0 + d / 2);
   patch.receiveShadow = true;
   scene.add(patch);
 }
@@ -350,7 +351,7 @@ function buildPantry(scene, zone, parts) {
 function buildLounge(scene, zone, parts) {
   const { x0, z0, w, d } = zone;
   floorPatch(scene, woodTexture(), 'wood', x0, z0, w, d);
-  floorPatch(scene, carpetTexture('#a0522d'), 'carpet', x0 + 0.8, z0 + 1.2, w - 1.6, d - 2.6, 0);
+  floorPatch(scene, carpetTexture('#a0522d'), 'carpet', x0 + 0.8, z0 + 1.2, w - 1.6, d - 2.6, 0, 0.03);
 
   const fabric = plastic('#4f6d7a', { roughness: 0.8, clearcoat: 0 });
   const accent = plastic('#d98c3a', { roughness: 0.8, clearcoat: 0 });

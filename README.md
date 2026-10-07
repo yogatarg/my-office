@@ -107,16 +107,23 @@ Muat ulang halaman setelah mengubah file ini.
 
 - Karyawan yang tidak bekerja **siaga di mejanya**. Agen utama (CEO) selalu di ruangannya.
 - `SubagentStart` → mulai bekerja di meja; status mengikuti tool yang dipakai.
-- `SubagentHandback` → berjalan ke ruang rapat, berdiri di dalam **meja U** menghadap kursi kepala, dan melapor
-  (gelembung berisi baris pertama laporan). Selama ada yang melapor, **CEO pindah ke kursi kepala** meja U.
-- Setelah selesai, rehat sebentar lalu kembali ke meja: bergantian **duduk di sofa lounge** atau berdiri di pantry.
+- `SubagentHandback` → berjalan ke boardroom dan presentasi di depan layar (gelembung berisi baris pertama
+  laporan). Selama ada yang melapor, **CEO duduk di kursi direktur** meja U.
+- Setelah selesai, rehat sebentar lalu kembali ke meja: bergantian **duduk di sofa lounge** atau berdiri di kafe.
 
 ## Tata ruang
 
-- Ruang CEO dan dua ruang rapat berdinding kaca di sisi belakang; meja rapat berbentuk U.
-- Setiap divisi dikelilingi sekat kaca dengan pintu menghadap lorong, berisi 6 meja (3 berhadapan dengan 3).
-- Zona bersama: **Pantry** (konter kopi, meja bundar) dan **Lounge** (sofa, kursi santai, meja kopi, lampu lantai).
-- Jalur dihitung dengan A* agar karakter memutari meja, perabot, dan dinding kaca.
+Open plan seperti kantor modern: dinding hanya untuk ruangan yang butuh privasi.
+
+- **Ruang CEO** (pojok kiri belakang) dan **Boardroom**, keduanya berdinding kaca.
+- **Boardroom**: meja U memanjang yang terbuka ke arah layar proyektor di dinding. Satu kursi direktur
+  di dasar U menghadap layar, peserta di kedua lengan. Pelapor berdiri di depan layar seperti presentasi,
+  dan CEO duduk di kursi direktur selama ada yang melapor.
+- **Divisi** (3 per baris) tanpa dinding: dibatasi pot tanaman memanjang, warna karpet, dan papan nama.
+  Tiap divisi 6 meja dengan sekat rendah di antara meja yang berhadapan.
+- **Social hub** di sisi kanan: kafe (konter kopi, kulkas, meja bar) dan beberapa klaster lounge.
+  Karyawan rehat bergantian berdiri di meja bar atau duduk di sofa.
+- **Resepsionis** dekat pintu masuk dengan dinding logo kantor dan sofa tamu.
 
 ## Grafis
 

@@ -1,26 +1,28 @@
 // Menyusun denah kantor dari konfigurasi. Murni hitungan (tanpa Three.js) agar bisa diuji.
 // Satuan: 1 = satu stud. Sumbu x ke kanan, z ke arah kamera; titik (0, 0) di tengah lantai.
 //
-//   ┌ ruang CEO ┬ rapat A ┬ rapat B ┐   ← deretan ruang kaca di dinding belakang
-//   ├───────────┴─ lorong ┴─────────┤
-//   │ divisi │ divisi │ divisi │ …  │   ← divisi berdinding kaca, disusun berbaris, dipisah lorong
-//   │ divisi │ general│ pantry │lounge│
+//   ┌ Ruang CEO ┬──── Boardroom ────┐       ┌──────────────┐
+//   ├───────────┴───────────────────┤ lorong│  Social hub  │  ← dinding hanya untuk ruang
+//   │ divisi 🌿 divisi 🌿 divisi    │       │ kafe, lounge │    yang butuh privasi
+//   │ ══════ lorong utama ══════    │       │              │
+//   │ divisi 🌿 divisi 🌿 divisi    │       │              │  ← area kerja terbuka (open plan),
+//   ├───────────────────────────────┤       │              │    divisi dibatasi pot tanaman
+//   │ Resepsionis + dinding logo    │       │              │
+//   └───────────────────────────────┘       └──────────────┘
 
 export const DESK_WIDTH = 2.6; // lebar meja; meja dalam satu baris saling menempel
 const ROW_GAP = 4; // jarak antar baris meja yang saling berhadapan (punggung meja menempel)
 const ZONE_WIDTH = 9.6;
-const ROW_A_OFFSET = 2.8; // jarak baris meja pertama dari dinding kiri zona, cukup untuk lalu lalang
+const ROW_A_OFFSET = 2.8; // jarak baris meja pertama dari tepi kiri zona, cukup untuk lalu lalang
 const ZONE_PAD = 1.6; // ruang kosong di ujung blok meja (papan nama, lalu lalang)
-const CORRIDOR = 3;
-const MARGIN = 1.2; // jarak zona dari dinding luar
-const ROOM_DEPTH = 8;
-const ROOMS = [
-  { id: 'ceo', kind: 'ceo', name: 'Ruang CEO', width: 12 },
-  { id: 'meeting-a', kind: 'meeting', name: 'Ruang Rapat A', width: 9 },
-  { id: 'meeting-b', kind: 'meeting', name: 'Ruang Rapat B', width: 9 },
-];
-// Zona bersama memakai ukuran divisi standar (6 meja) agar baris denah rata.
-const SHARED_DEPTH = 3 * DESK_WIDTH + ZONE_PAD * 2;
+const PER_ROW = 3; // divisi per baris
+const PLANTER_GAP = 2.4; // celah antar divisi sebaris, diisi pot tanaman memanjang
+const AISLE = 4; // lorong utama
+const MARGIN = 1.2; // jarak dari dinding luar
+const ROOM_DEPTH = 13; // cukup dalam untuk meja U yang memanjang
+const CEO_ROOM_WIDTH = 15;
+const HUB_WIDTH = 14;
+const RECEPTION_DEPTH = 7;
 
 function divisionZone(division) {
   const cols = Math.ceil(division.desks / 2);
@@ -36,52 +38,53 @@ function deskSlots(zone) {
       slots.push({ x, z: zone.z0 + ZONE_PAD + DESK_WIDTH * (i + 0.5), facing });
     }
   }
+  // Sekat rendah di garis pertemuan punggung meja kedua baris.
+  zone.screen = { x: rowA + ROW_GAP / 2, z0: zone.z0 + ZONE_PAD, z1: zone.z0 + ZONE_PAD + DESK_WIDTH * zone.cols };
   return slots;
 }
 
 export function computeLayout(config) {
   const zones = [...config.divisions, config.fallback].map(divisionZone);
-  zones.push({ id: 'pantry', kind: 'pantry', name: 'Pantry', w: ZONE_WIDTH, d: SHARED_DEPTH });
-  zones.push({ id: 'lounge', kind: 'lounge', name: 'Lounge', w: ZONE_WIDTH, d: SHARED_DEPTH });
-
-  // Jumlah zona per baris dipilih agar denah mendekati persegi (enak dilihat dari kamera isometrik).
-  const perRow = Math.ceil(Math.sqrt(zones.length)) + 1;
   const rows = [];
-  for (let i = 0; i < zones.length; i += perRow) rows.push(zones.slice(i, i + perRow));
+  for (let i = 0; i < zones.length; i += PER_ROW) rows.push(zones.slice(i, i + PER_ROW));
 
-  const roomsWidth = ROOMS.reduce((sum, r) => sum + r.width, 0);
-  const rowsWidth = Math.max(...rows.map((row) => row.reduce((sum, z) => sum + z.w, 0) + CORRIDOR * (row.length - 1)));
-  const width = Math.max(roomsWidth, rowsWidth) + MARGIN * 2;
+  const blockWidth = PER_ROW * ZONE_WIDTH + (PER_ROW - 1) * PLANTER_GAP;
+  const workEnd = MARGIN + blockWidth; // tepi kanan area kerja
+  const width = workEnd + AISLE + HUB_WIDTH + MARGIN;
 
   // Koordinat sementara dimulai dari pojok kiri belakang (0, 0).
-  // Deretan ruang kaca direntangkan memenuhi lebar lantai.
-  const stretch = width / roomsWidth;
-  let x = 0;
-  const rooms = ROOMS.map((room) => {
-    const placed = { ...room, x0: x, z0: 0, w: room.width * stretch, d: ROOM_DEPTH };
-    x += placed.w;
-    return placed;
-  });
+  const rooms = [
+    { id: 'ceo', kind: 'ceo', name: 'Ruang CEO', x0: 0, z0: 0, w: CEO_ROOM_WIDTH, d: ROOM_DEPTH },
+    { id: 'boardroom', kind: 'boardroom', name: 'Boardroom', x0: CEO_ROOM_WIDTH, z0: 0, w: workEnd - CEO_ROOM_WIDTH, d: ROOM_DEPTH },
+  ];
 
-  let z = ROOM_DEPTH + CORRIDOR;
+  const planters = []; // pot tanaman memanjang di antara divisi sebaris
+  let z = ROOM_DEPTH + AISLE;
   for (const row of rows) {
-    let zx = MARGIN;
-    for (const zone of row) {
-      Object.assign(zone, { x0: zx, z0: z });
-      zx += zone.w + CORRIDOR;
-    }
-    z += Math.max(...row.map((zone) => zone.d)) + CORRIDOR;
+    row.forEach((zone, i) => {
+      Object.assign(zone, { x0: MARGIN + i * (ZONE_WIDTH + PLANTER_GAP), z0: z });
+      if (i > 0) planters.push({ x: zone.x0 - PLANTER_GAP / 2, z0: z + 1, z1: z + zone.d - 1 });
+    });
+    z += Math.max(...row.map((zone) => zone.d)) + AISLE;
   }
-  const depth = z;
+
+  const reception = { id: 'reception', kind: 'reception', name: 'Resepsionis', x0: MARGIN, z0: z, w: blockWidth, d: RECEPTION_DEPTH };
+  const depth = z + RECEPTION_DEPTH + MARGIN;
+  const hub = { id: 'hub', kind: 'hub', name: 'Social Hub', x0: workEnd + AISLE, z0: MARGIN, w: HUB_WIDTH, d: depth - MARGIN * 2 };
 
   // Geser semua koordinat agar pusat lantai di (0, 0).
   const ox = width / 2;
   const oz = depth / 2;
-  for (const item of [...rooms, ...zones]) {
+  for (const item of [...rooms, ...zones, reception, hub]) {
     item.x0 -= ox;
     item.z0 -= oz;
   }
-  for (const zone of zones) if (zone.kind === 'division') zone.slots = deskSlots(zone);
+  for (const p of planters) {
+    p.x -= ox;
+    p.z0 -= oz;
+    p.z1 -= oz;
+  }
+  for (const zone of zones) zone.slots = deskSlots(zone);
 
-  return { width, depth, rooms, zones };
+  return { width, depth, rooms, zones, planters, reception, hub };
 }

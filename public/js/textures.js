@@ -324,3 +324,51 @@ export function signTexture(name, color) {
   g.fillText(name, 56, 84, 430);
   return toTexture(c);
 }
+
+// Slide presentasi di layar proyektor ruang rapat: judul dan grafik batang sederhana.
+export function slideTexture() {
+  const [c, g] = canvas(768, 432);
+  g.fillStyle = '#f7f8fa';
+  g.fillRect(0, 0, 768, 432);
+  g.fillStyle = '#1d1f23';
+  g.font = '700 40px Unbounded, sans-serif';
+  g.fillText('Laporan Tim', 48, 82);
+  g.fillStyle = '#7a7f87';
+  g.font = '500 22px Manrope, sans-serif';
+  g.fillText('Progres minggu ini', 48, 120);
+  const bars = [0.45, 0.7, 0.55, 0.9, 0.75];
+  const colors = ['#2f6db5', '#8e5bb5', '#1f9a8a', '#c0602b', '#3d4a5c'];
+  bars.forEach((h, i) => {
+    g.fillStyle = colors[i];
+    g.fillRect(70 + i * 120, 380 - h * 210, 72, h * 210);
+  });
+  g.fillStyle = '#d5d8dd';
+  g.fillRect(48, 382, 672, 3);
+  return toTexture(c);
+}
+
+// Dinding logo resepsionis: stud kuning dan nama kantor.
+export function logoTexture(name) {
+  const [c, g] = canvas(1024, 384);
+  g.fillStyle = '#2b313c';
+  g.fillRect(0, 0, 1024, 384);
+  const cx = 230;
+  const cy = 192;
+  g.fillStyle = '#b8940a';
+  g.beginPath();
+  g.arc(cx, cy + 10, 92, 0, Math.PI * 2);
+  g.fill();
+  g.fillStyle = '#f5cb18';
+  g.beginPath();
+  g.arc(cx, cy, 92, 0, Math.PI * 2);
+  g.fill();
+  g.fillStyle = '#ffe45c';
+  g.beginPath();
+  g.arc(cx, cy - 6, 48, 0, Math.PI * 2);
+  g.fill();
+  g.fillStyle = '#f4f2ec';
+  g.font = '800 104px Unbounded, sans-serif';
+  g.textBaseline = 'middle';
+  g.fillText(name, 370, cy + 6, 610);
+  return toTexture(c);
+}

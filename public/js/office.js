@@ -119,7 +119,7 @@ export function createOffice(container, config, { maxDelta = 0.05, quality = 'hi
     resize();
   }
 
-  const world = buildWorld(scene, layout);
+  const world = buildWorld(scene, layout, { name: config.name });
 
   // --- Navigasi: semua perabot dan dinding menjadi rintangan ---
   scene.updateMatrixWorld(true);
@@ -128,21 +128,14 @@ export function createOffice(container, config, { maxDelta = 0.05, quality = 'hi
   for (const obj of [...world.obstacles, ...world.blockers]) nav.blockBox(box.setFromObject(obj));
   for (const [x, z, r] of world.circles) nav.blockCircle(x, z, r);
 
-  // Tempat berdiri: mengelilingi meja rapat dan meja bundar pantry, menghadap ke tengah.
-  function ring([cx, cz], radius, angles) {
-    return angles.map((a) => {
-      const x = cx + Math.sin(a) * radius;
-      const z = cz + Math.cos(a) * radius;
-      return { x, z, yaw: Math.atan2(cx - x, cz - z), owner: null };
-    });
-  }
+  // Tempat berdiri dan duduk: pelapor di boardroom, rehat di kafe (berdiri) atau lounge (duduk).
   const asSpots = (list) => list.map((spot) => ({ ...spot, owner: null }));
   const spots = {
     // Pelapor berdiri di dalam meja U; kursi kepala ruang rapat A untuk CEO.
     meeting: asSpots(world.meetings.flatMap((m) => m.spots)),
     'meeting-head': asSpots([world.meetings[0].head]),
     // Urutan sudut berselang-seling supaya beberapa karakter pertama tersebar merata.
-    pantry: ring(world.pantry.table, 1.9, [0, 2, 4, 1, 3, 5].map((i) => (i * Math.PI) / 3 + Math.PI / 6)),
+    pantry: asSpots(world.pantry.spots),
     lounge: asSpots(world.lounge.seats),
   };
 

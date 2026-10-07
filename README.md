@@ -150,6 +150,13 @@ Open plan seperti kantor modern: dinding hanya untuk ruangan yang butuh privasi.
 - **Notifikasi** (tombol di header): bunyi saat CEO selesai atau butuh perhatian, ditambah notifikasi sistem
   bila tab kantor sedang tidak dilihat.
 
+## Ringkasan kerja
+
+Tombol **📊 Ringkasan** di header membuka laporan harian dari log (`/api/summary?date=YYYY-MM-DD`):
+jumlah perintah, tugas dibagikan dan selesai, aksi tim, aktivitas per jam, tabel per karyawan
+(tugas selesai, lama kerja, menulis/membaca/terminal, file), serta file dan proyek yang paling sering disentuh.
+Arsip log hasil rotasi ikut dihitung.
+
 ## Grafis
 
 - Plastik memakai `MeshPhysicalMaterial` dengan clearcoat tipis dan pantulan lingkungan (`RoomEnvironment`).

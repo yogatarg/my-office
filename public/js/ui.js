@@ -238,3 +238,144 @@ export function createNotifier({ button, storageKey = 'my-office-notify' }) {
     },
   };
 }
+
+// ---------- Ringkasan kerja harian ----------
+
+export function createSummary({ button, root, config, tracker }) {
+  let current = null; // tanggal yang sedang ditampilkan (YYYY-MM-DD)
+
+  const labelOf = (key) => (key === 'main' ? config.lead.label : config.roles.get(key)?.style.label ?? tracker.agents.get(key)?.style.label ?? key);
+  const accentOf = (key) => (key === 'main' ? config.lead.accent : config.roles.get(key)?.style.accent ?? config.fallback.color);
+  const dateLabel = (d) => new Date(`${d}T00:00:00`).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+  async function load(date) {
+    root.replaceChildren(el('p', 'muted', 'Memuat ringkasan…'));
+    try {
+      const res = await fetch(`/api/summary${date ? `?date=${date}` : ''}`, { cache: 'no-store' });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      current = data.date;
+      render(data);
+    } catch (err) {
+      root.replaceChildren(el('p', 'muted', `Ringkasan gagal dimuat: ${err.message}`));
+    }
+  }
+
+  function render(data) {
+    root.replaceChildren();
+    const head = el('div', 'summary-head');
+    const title = el('h2', '', 'Ringkasan kerja');
+    const nav = el('div', 'summary-nav');
+    // Hanya hari yang punya aktivitas yang bisa dikunjungi (tanggal berformat YYYY-MM-DD bisa dibandingkan sebagai teks).
+    const before = data.days.filter((d) => d < data.date).at(-1);
+    const after = data.days.find((d) => d > data.date);
+    const prev = el('button', '', '‹');
+    const next = el('button', '', '›');
+    prev.type = next.type = 'button';
+    prev.title = 'Hari sebelumnya';
+    next.title = 'Hari berikutnya';
+    prev.disabled = !before;
+    next.disabled = !after;
+    prev.addEventListener('click', () => load(before));
+    next.addEventListener('click', () => load(after));
+    nav.append(prev, el('span', '', dateLabel(data.date)), next);
+    const close = el('button', 'summary-close', '×');
+    close.type = 'button';
+    close.title = 'Tutup';
+    close.addEventListener('click', () => toggle(false));
+    head.append(title, nav, close);
+    root.append(head);
+
+    const t = data.totals;
+    if (!t.firstAt) {
+      root.append(el('p', 'muted', 'Belum ada aktivitas pada hari ini.'));
+      return;
+    }
+    const span = `${new Date(t.firstAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}–${new Date(t.lastAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`;
+    root.append(el('p', 'muted', `Kantor aktif ${span}`));
+
+    const tiles = el('div', 'summary-tiles');
+    for (const [label, value] of [
+      ['Perintah darimu', t.prompts],
+      ['Tugas dibagikan', t.delegations],
+      ['Tugas selesai', t.tasksDone],
+      ['Aksi tim', t.actions],
+      ['File disentuh', t.files],
+      ['Proyek', t.projects],
+    ]) {
+      const tile = el('div', 'tile');
+      tile.append(el('strong', '', String(value)), el('span', '', label));
+      tiles.append(tile);
+    }
+    root.append(tiles);
+
+    // Grafik batang satu seri: aksi tim per jam. Satu warna, tanpa legenda; nilai muncul saat hover
+    // dan tersedia sebagai teks untuk pembaca layar.
+    root.append(el('h3', '', 'Aktivitas per jam'));
+    const chart = el('div', 'hours');
+    const max = Math.max(1, ...data.hours);
+    data.hours.forEach((count, hour) => {
+      const col = el('div', 'hour');
+      const bar = el('div', 'bar');
+      bar.style.height = `${(count / max) * 100}%`;
+      const label = `${String(hour).padStart(2, '0')}.00–${String(hour + 1).padStart(2, '0')}.00: ${count} aksi`;
+      col.setAttribute('aria-label', label);
+      col.dataset.tip = label;
+      if (count === max && count > 0) col.append(el('em', '', String(count)));
+      col.append(bar, el('small', '', hour % 3 === 0 ? String(hour).padStart(2, '0') : ''));
+      chart.append(col);
+    });
+    root.append(chart);
+
+    root.append(el('h3', '', 'Karyawan'));
+    const table = el('table', 'summary-table');
+    const headRow = el('tr');
+    for (const h of ['Karyawan', 'Tugas selesai', 'Lama kerja', 'Menulis', 'Membaca', 'Terminal', 'File']) headRow.append(el('th', '', h));
+    table.append(el('thead'));
+    table.tHead.append(headRow);
+    const body = el('tbody');
+    for (const a of data.agents) {
+      const row = el('tr');
+      const name = el('td');
+      const dot = el('i', 'dot');
+      dot.style.background = accentOf(a.key);
+      name.append(dot, document.createTextNode(labelOf(a.key)));
+      row.append(name);
+      for (const value of [a.tasksDone, a.workedMs ? formatDuration(a.workedMs) : '–', a.tools.menulis, a.tools.membaca, a.tools.terminal, a.files]) {
+        row.append(el('td', '', String(value)));
+      }
+      body.append(row);
+    }
+    table.append(body);
+    root.append(table);
+
+    const lists = el('div', 'summary-lists');
+    for (const [title, items, empty] of [
+      ['File paling sering disentuh', data.files, 'Belum ada file.'],
+      ['Proyek', data.projects, 'Belum ada proyek di workspace.'],
+    ]) {
+      const box = el('div');
+      box.append(el('h3', '', title));
+      const ul = el('ul', 'summary-list');
+      if (!items.length) ul.append(el('li', 'muted', empty));
+      for (const item of items) {
+        const li = el('li');
+        li.append(el('span', '', item.name), el('b', '', `×${item.count}`));
+        ul.append(li);
+      }
+      box.append(ul);
+      lists.append(box);
+    }
+    root.append(lists);
+  }
+
+  function toggle(open = root.hidden) {
+    root.hidden = !open;
+    button.setAttribute('aria-expanded', String(open));
+    if (open) load(current);
+  }
+
+  button.addEventListener('click', () => toggle());
+  window.addEventListener('keydown', (e) => e.key === 'Escape' && !root.hidden && toggle(false));
+  return { toggle };
+}

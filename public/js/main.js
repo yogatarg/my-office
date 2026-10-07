@@ -1,7 +1,7 @@
 import { createTracker } from './agents.js';
 import { createOffice, QUALITY } from './office.js';
 import { loadConfig } from './config.js';
-import { createDetailPanel, createZoneBar, createMinimap, createNotifier } from './ui.js';
+import { createDetailPanel, createZoneBar, createMinimap, createNotifier, createSummary } from './ui.js';
 
 const FEED_LIMIT = 7;
 const feed = document.getElementById('feed');
@@ -58,6 +58,7 @@ const detail = createDetailPanel({ root: document.getElementById('detail'), trac
 createZoneBar({ root: document.getElementById('zones'), office });
 createMinimap({ canvas: document.querySelector('#minimap canvas'), office, tracker });
 const notifier = createNotifier({ button: document.getElementById('notify') });
+createSummary({ button: document.getElementById('summary-button'), root: document.getElementById('summary'), config, tracker });
 
 const projectChip = document.getElementById('project');
 function showProject() {

@@ -28,8 +28,40 @@
     header a { font-size: 12px; font-weight: 700; color: var(--ink); text-decoration: none; border-bottom: 2px solid var(--yellow); }
     #project { font: 700 12px 'Manrope', sans-serif; background: #2b313c; color: #f4f2ec; border-radius: 8px; padding: 4px 9px; }
     #quality { font: 700 12px 'Manrope', sans-serif; color: var(--ink); background: #fff; border: 1px solid rgba(0,0,0,.15); border-radius: 8px; padding: 4px 9px; cursor: pointer; }
-    #quality, #notify { font: 700 12px 'Manrope', sans-serif; color: var(--ink); background: #fff; border: 1px solid rgba(0,0,0,.15); border-radius: 8px; padding: 4px 9px; cursor: pointer; }
-    #quality:hover, #notify:hover { background: #f4f2ec; }
+    #quality, #notify, #summary-button { font: 700 12px 'Manrope', sans-serif; color: var(--ink); background: #fff; border: 1px solid rgba(0,0,0,.15); border-radius: 8px; padding: 4px 9px; cursor: pointer; }
+    #quality:hover, #notify:hover, #summary-button:hover { background: #f4f2ec; }
+
+    /* Ringkasan kerja */
+    #summary { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 5; width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow: auto; padding: 18px 20px; font-size: 13px; }
+    .summary-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .summary-head h2 { margin: 0; font: 800 16px 'Unbounded', sans-serif; }
+    .summary-nav { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+    .summary-nav button { width: 28px; height: 28px; border-radius: 8px; border: 1px solid rgba(0,0,0,.15); background: #fff; cursor: pointer; font-size: 16px; }
+    .summary-nav button:disabled { opacity: .35; cursor: default; }
+    .summary-close { margin-left: auto; border: 0; background: transparent; font-size: 22px; cursor: pointer; color: var(--muted); }
+    #summary .muted { color: var(--muted); margin: 6px 0; }
+    #summary h3 { margin: 16px 0 6px; font: 600 10px 'Unbounded', sans-serif; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+    .summary-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(105px, 1fr)); gap: 8px; margin-top: 8px; }
+    .tile { background: #fff; border-radius: 10px; padding: 10px 12px; border: 1px solid rgba(0,0,0,.08); }
+    .tile strong { display: block; font: 800 22px 'Unbounded', sans-serif; }
+    .tile span { color: var(--muted); font-size: 12px; }
+    .hours { display: grid; grid-template-columns: repeat(24, 1fr); gap: 2px; height: 130px; align-items: end; padding: 16px 0 0; margin-bottom: 26px; border-bottom: 1px solid rgba(0,0,0,.18); position: relative; }
+    .hour { position: relative; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; cursor: default; }
+    .hour .bar { width: 100%; max-width: 18px; min-height: 0; background: #2f6db5; border-radius: 4px 4px 0 0; }
+    .hour:hover .bar { background: #1d4e8f; }
+    .hour em { position: absolute; top: -16px; font-style: normal; font-weight: 700; font-size: 11px; color: var(--ink); }
+    .hour small { position: absolute; bottom: -18px; color: var(--muted); font-size: 10.5px; }
+    .hour:hover::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 4px); white-space: nowrap; background: var(--ink); color: #fff; font-size: 11px; padding: 3px 7px; border-radius: 6px; z-index: 1; }
+    .summary-table { width: 100%; border-collapse: collapse; margin-top: 22px; font-size: 12.5px; }
+    #summary h3 + .summary-table { margin-top: 0; }
+    .summary-table th { text-align: left; color: var(--muted); font-weight: 700; padding: 5px 6px; border-bottom: 1px solid rgba(0,0,0,.15); }
+    .summary-table td { padding: 5px 6px; border-bottom: 1px solid rgba(0,0,0,.06); font-variant-numeric: tabular-nums; }
+    .summary-table .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
+    .summary-lists { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .summary-list { margin: 0; padding: 0; list-style: none; }
+    .summary-list li { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; border-bottom: 1px solid rgba(0,0,0,.06); }
+    .summary-list span { font-family: ui-monospace, Consolas, monospace; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    @media (max-width: 600px) { .summary-lists { grid-template-columns: 1fr; } .summary-table th:nth-child(n+4), .summary-table td:nth-child(n+4) { display: none; } }
     button:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
 
     .panel { background: rgba(244, 242, 236, .92); backdrop-filter: blur(10px); box-shadow: 0 3px 0 rgba(0,0,0,.12); border-radius: 14px; }
@@ -128,10 +160,12 @@
     <span id="status">menghubungkan…</span>
     <span id="project" hidden></span>
     <button id="quality" type="button" title="Ganti kualitas grafis">Kualitas: Tinggi</button>
+    <button id="summary-button" type="button" aria-expanded="false" aria-controls="summary">📊 Ringkasan</button>
     <button id="notify" type="button" title="Bunyi dan notifikasi saat CEO selesai atau butuh perhatianmu" aria-pressed="false">🔕 Notifikasi: Mati</button>
     <a href="/log.html" target="_blank">Log mentah</a>
   </header>
   <section id="detail" class="panel" hidden aria-live="polite"></section>
+  <section id="summary" class="panel" hidden role="dialog" aria-label="Ringkasan kerja"></section>
   <nav id="zones" class="panel" aria-label="Pindah ke zona"></nav>
   <div id="minimap" class="panel" title="Klik untuk memindahkan kamera"><canvas aria-label="Minimap kantor"></canvas></div>
   <aside>

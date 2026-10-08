@@ -395,7 +395,7 @@ function buildReception(scene, area, parts, name) {
   const { x0, z0, w, d } = area;
   floorPatch(scene, carpetTexture('#3a3f48'), 'carpet', x0 + 0.6, z0 + 0.6, 16, d - 1.2, 0);
 
-  // Dinding logo berdiri bebas, menghadap pintu masuk (+z).
+  // Dinding logo berdiri bebas di belakang resepsionis, menghadap pintu masuk (+z).
   const logo = plastic('#ffffff', { map: logoTexture(name) });
   const wall = solid(new THREE.BoxGeometry(8, 3, 0.4), [mats.wall, mats.wall, mats.wall, mats.wall, logo, mats.wall], x0 + 6, 1.5, z0 + 0.9);
   scene.add(wall);
@@ -420,11 +420,30 @@ function buildReception(scene, area, parts, name) {
   scene.add(solid(new THREE.CylinderGeometry(0.6, 0.6, 0.1, 24), mats.wood, x0 + 13, 0.95, z0 + 4.1));
   parts.circles.push([x0 + 13, z0 + 4.1, 0.6]);
 
-  // Keset pintu masuk di tepi depan lantai.
-  floorPatch(scene, carpetTexture('#2b2b2b'), 'carpet', x0 + w - 7, z0 + d - 1.6, 4, 1.6, 0);
-  const entrance = standingSign('Pintu Masuk', '#f5cb18');
-  entrance.position.set(x0 + w - 9, 0, z0 + d - 0.8);
-  scene.add(entrance);
+  // Pintu masuk kaca ganda tepat di depan meja resepsionis: tamu masuk, langsung berhadapan
+  // dengan resepsionis dan dinding logo di belakangnya.
+  const doorX = x0 + 6;
+  const doorZ = z0 + d + 0.9; // di tepi depan lantai
+  floorPatch(scene, carpetTexture('#2b2b2b'), 'carpet', doorX - 1.6, doorZ - 2.2, 3.2, 1.8, 0, 0.03);
+  for (const side of [-1, 1]) {
+    scene.add(solid(new THREE.BoxGeometry(0.18, WALL_HEIGHT, 0.18), mats.frame, doorX + side * 1.7, WALL_HEIGHT / 2, doorZ));
+    // Daun pintu berengsel di tiang, terbuka sedikit ke dalam.
+    const leaf = new THREE.Group();
+    leaf.position.set(doorX + side * 1.6, 0, doorZ);
+    leaf.rotation.y = side * 0.45;
+    const glass = new THREE.Mesh(new THREE.BoxGeometry(1.5, WALL_HEIGHT - 0.4, 0.06), mats.glass);
+    glass.position.set(-side * 0.75, (WALL_HEIGHT - 0.4) / 2 + 0.1, 0);
+    glass.renderOrder = 1;
+    const handle = solid(new THREE.BoxGeometry(0.06, 0.9, 0.12), mats.metal, -side * 1.35, 1.5, 0);
+    const frameTop = solid(new THREE.BoxGeometry(1.5, 0.08, 0.1), mats.metal, -side * 0.75, WALL_HEIGHT - 0.25, 0);
+    const frameBottom = solid(new THREE.BoxGeometry(1.5, 0.08, 0.1), mats.metal, -side * 0.75, 0.12, 0);
+    leaf.add(glass, handle, frameTop, frameBottom);
+    scene.add(leaf);
+  }
+  scene.add(solid(new THREE.BoxGeometry(3.6, 0.3, 0.3), mats.frame, doorX, WALL_HEIGHT, doorZ));
+  const doorSign = signBoard('Pintu Masuk', '#f5cb18', 2.2);
+  doorSign.position.set(doorX, WALL_HEIGHT + 0.55, doorZ);
+  scene.add(doorSign);
 
   for (const [px, pz] of [[x0 + 0.9, z0 + d - 0.9], [x0 + 15.5, z0 + 0.9]]) {
     const plant = createPlant(1.1);

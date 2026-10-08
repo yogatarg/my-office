@@ -125,7 +125,8 @@ Muat ulang halaman setelah mengubah file ini.
 - `SubagentStart` → mulai bekerja di meja; status mengikuti tool yang dipakai.
 - `SubagentHandback` → berjalan ke boardroom dan presentasi di depan layar (gelembung berisi baris pertama
   laporan). Selama ada yang melapor, **CEO duduk di kursi direktur** meja U.
-- Setelah selesai, rehat sebentar lalu kembali ke meja: bergantian **duduk di sofa lounge** atau berdiri di kafe.
+- Setelah selesai, rehat sebentar lalu kembali ke meja. Tempat rehat bergiliran per karyawan: berdiri di kafe,
+  duduk di sofa lounge, berlari di treadmill atau mengangkat dumbel di gym, atau bersantai di tepi kolam renang.
 
 ## Tata ruang
 
@@ -140,6 +141,8 @@ Open plan seperti kantor modern: dinding hanya untuk ruangan yang butuh privasi.
 - **Social hub** di sisi kanan: kafe (konter kopi, kulkas, meja bar) dan beberapa klaster lounge.
   Karyawan rehat bergantian berdiri di meja bar atau duduk di sofa.
 - **Resepsionis** dekat pintu masuk dengan dinding logo kantor dan sofa tamu.
+- **Sayap olahraga** di paling kanan: **gym** (treadmill, dinding cermin, bangku beban, rak dumbel, matras yoga)
+  dan **kolam renang** (tali lintasan, kursi berjemur, payung).
 
 ## Interaksi
 

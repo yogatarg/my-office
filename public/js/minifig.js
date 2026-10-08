@@ -293,6 +293,12 @@ function standingPose(status, t, holdsClipboard) {
   return p;
 }
 
+// Mengangkat dumbel bergantian kiri dan kanan.
+function liftingPose(t) {
+  const curl = (offset) => -0.35 - (Math.sin(t * 2.6 + offset) * 0.5 + 0.5) * 1.5;
+  return { torso: 0, headX: 0.05, headY: 0, armLx: curl(0), armLz: 0.12, armRx: curl(Math.PI), armRz: -0.12, legL: 0, legR: 0 };
+}
+
 function walkingPose(phase) {
   const s = Math.sin(phase) * 0.7;
   return { torso: 0.03, headX: 0, headY: 0, armLx: s, armLz: 0.08, armRx: -s, armRz: -0.08, legL: -s, legR: s };
@@ -302,7 +308,7 @@ function walkingPose(phase) {
 export function poseMinifig(fig, status, t, dt, motion) {
   const { legL, legR, torso, head, armL, armR, paper, mug, clipboard } = fig.userData.joints;
   const pose = fig.userData.pose;
-  const target = motion.walking ? walkingPose(motion.phase) : motion.sit > 0.5 ? seatedPose(status, t, motion.seatKind) : standingPose(status, t, Boolean(clipboard));
+  const target = motion.exercise === 'weights' ? liftingPose(t) : motion.walking ? walkingPose(motion.phase) : motion.sit > 0.5 ? seatedPose(status, t, motion.seatKind) : standingPose(status, t, Boolean(clipboard));
   const k = 1 - Math.exp(-dt * (motion.walking ? 16 : 9));
   for (const key of Object.keys(pose)) pose[key] += (target[key] - pose[key]) * k;
 

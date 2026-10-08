@@ -24,14 +24,13 @@ export const QUALITY = {
   low: { label: 'Ringan', ao: false, pixelRatio: 1, shadowMap: 2048, shadowRadius: 1 },
 };
 
-const CHATTER = [
-  'Kopi dulu ☕',
-  'Build-nya hijau semua 🎉',
-  'Siapa yang push hari Jumat?',
-  'Nanti rapat jam berapa?',
-  'Bug kemarin sudah beres 👍',
-  'Habis ini balik ke meja',
-];
+// Obrolan saat rehat, berbeda menurut tempatnya.
+const CHATTER = {
+  default: ['Kopi dulu ☕', 'Build-nya hijau semua 🎉', 'Siapa yang push hari Jumat?', 'Nanti rapat jam berapa?', 'Bug kemarin sudah beres 👍', 'Habis ini balik ke meja'],
+  treadmill: ['Cardio dulu 🏃', 'Lima menit lagi…', 'Biar otak segar lagi 💪'],
+  weights: ['Satu set lagi!', 'Angkat beban, bukan angkat bug 💪', 'Hitung sampai dua belas…'],
+  pool: ['Airnya segar 🏊', 'Habis ini pasti fokus lagi', 'Liburan sebentar ☀️'],
+};
 
 function createLabel(style) {
   const el = document.createElement('div');
@@ -183,15 +182,22 @@ export function createOffice(container, config, { maxDelta = 0.05, quality = 'hi
     // Urutan sudut berselang-seling supaya beberapa karakter pertama tersebar merata.
     pantry: asSpots(world.pantry.spots),
     lounge: asSpots(world.lounge.seats),
+    gym: asSpots(world.gym.spots),
+    pool: asSpots(world.pool.seats).map((s) => ({ ...s, place: 'pool' })),
   };
+  // Tempat rehat bergiliran per karyawan: kafe, lounge, gym, kolam renang.
+  const BREAK_ORDER = ['pantry', 'lounge', 'gym', 'pool'];
 
   const workers = new Map();
 
   function claimSpot(place, worker) {
     release(worker);
-    // Rehat dibagi bergantian: sebagian duduk santai di lounge, sebagian berdiri di pantry.
+    // Rehat dibagi bergiliran: tiap karyawan punya tempat favorit, lalu tempat lain bila penuh.
     let lists = [spots[place]];
-    if (place === 'pantry') lists = worker.prefersLounge ? [spots.lounge, spots.pantry] : [spots.pantry, spots.lounge];
+    if (place === 'pantry') {
+      const first = worker.breakPref % BREAK_ORDER.length;
+      lists = BREAK_ORDER.map((_, i) => spots[BREAK_ORDER[(first + i) % BREAK_ORDER.length]]);
+    }
     const spot = lists.flat().find((s) => !s.owner) ?? lists[0][workers.size % lists[0].length];
     spot.owner = worker;
     worker.spot = spot;
@@ -240,7 +246,8 @@ export function createOffice(container, config, { maxDelta = 0.05, quality = 'hi
     const worker = {
       fig, desk, el, drop: 6, vel: 0, last: '', steps: [], phase: 0, walking: false,
       spot: null, chatter: null, say: null, meetingUntil: 0,
-      prefersLounge: workers.size % 2 === 0,
+      breakPref: workers.size, // indeks tempat rehat favorit (lihat BREAK_ORDER)
+      lift: 0, // naik ke dek treadmill
       anchor: accessOf(desk), // titik berdiri untuk bangun dari tempat duduk saat ini
     };
     let start = seatOf(desk);
@@ -363,7 +370,8 @@ export function createOffice(container, config, { maxDelta = 0.05, quality = 'hi
     const idle = worker.goal === 'pantry' && agent.status === 'asleep' && !worker.steps.length;
     if (worker.chatter && (now > worker.chatter.until || !idle)) worker.chatter = null;
     if (!worker.chatter && idle && Math.random() < dt / 20) {
-      worker.chatter = { text: CHATTER[Math.floor(Math.random() * CHATTER.length)], until: now + 4000 };
+      const lines = CHATTER[worker.spot?.place ?? worker.spot?.kind] ?? CHATTER.default;
+      worker.chatter = { text: lines[Math.floor(Math.random() * lines.length)], until: now + 4000 };
     }
     return worker.chatter?.text ?? '';
   }
@@ -385,13 +393,21 @@ export function createOffice(container, config, { maxDelta = 0.05, quality = 'hi
         if (worker.vel > 0) worker.drop = 0.0001;
       }
     }
+    // Di gym: naik ke dek treadmill lalu berlari di tempat, atau mengangkat dumbel.
+    const arrived = !worker.steps.length && worker.goal !== 'desk' && worker.spot;
+    const exercise = arrived ? worker.spot.kind : null;
+    worker.lift += ((arrived ? worker.spot.lift ?? 0 : 0) - worker.lift) * (1 - Math.exp(-dt * 8));
+    if (exercise === 'treadmill') {
+      worker.walking = true;
+      worker.phase += dt * 9;
+    }
     const bob = worker.walking ? Math.abs(Math.sin(worker.phase)) * 0.08 : 0;
     const base = STAND_HEIGHT + (SEAT_HEIGHT - STAND_HEIGHT) * worker.sit;
-    worker.fig.position.set(worker.x, base + worker.drop + bob, worker.z);
+    worker.fig.position.set(worker.x, base + worker.lift + worker.drop + bob, worker.z);
     worker.fig.rotation.y = worker.yaw;
 
     const seatKind = worker.goal === 'desk' ? 'desk' : worker.spot?.kind ?? 'desk';
-    poseMinifig(worker.fig, status, t, dt, { sit: worker.sit, walking: worker.walking, phase: worker.phase, seatKind });
+    poseMinifig(worker.fig, status, t, dt, { sit: worker.sit, walking: worker.walking, phase: worker.phase, seatKind, exercise });
 
     const color = STATUS[status].color;
     const on = status !== 'asleep';
@@ -499,6 +515,8 @@ export function createOffice(container, config, { maxDelta = 0.05, quality = 'hi
     ...layout.rooms.map((r) => ({ id: r.id, name: r.name, x0: r.x0, z0: r.z0, w: r.w, d: r.d, color: r.kind === 'ceo' ? '#6e4a2e' : '#59606b' })),
     ...layout.zones.map((z) => ({ id: z.id, name: z.name, x0: z.x0, z0: z.z0, w: z.w, d: z.d, color: z.color })),
     { ...layout.hub, color: '#b98d5a' },
+    { ...layout.gym, color: '#3a3d42' },
+    { ...layout.pool, color: '#4cc3ec' },
     { ...layout.reception, color: '#3a3f48' },
   ];
 

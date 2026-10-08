@@ -146,10 +146,10 @@ function createArmchair(material) {
 }
 
 // Titik duduk di perabot (lokal → dunia) beserta titik berdiri di depannya.
-function seatSpot(furniture, localX, kind) {
+function seatSpot(furniture, localX, kind, frontZ = 1.5) {
   furniture.updateMatrixWorld(true);
   const seat = furniture.localToWorld(new THREE.Vector3(localX, 0, 0.05));
-  const front = furniture.localToWorld(new THREE.Vector3(localX, 0, 1.5));
+  const front = furniture.localToWorld(new THREE.Vector3(localX, 0, frontZ));
   return { x: seat.x, z: seat.z, yaw: furniture.rotation.y, seat: true, kind, access: { x: front.x, z: front.z } };
 }
 
@@ -528,6 +528,167 @@ function buildHub(scene, hub, parts) {
   parts.obstacles.push(sign);
 }
 
+// ---------- Fasilitas olahraga ----------
+
+// Treadmill menghadap -z (lokal): dek berjalan rendah dan konsol di depan.
+function createTreadmill() {
+  const g = new THREE.Group();
+  g.add(solid(rbox(1.1, 0.24, 2.4, 0.06), mats.frame, 0, 0.12, 0));
+  g.add(solid(new THREE.BoxGeometry(0.8, 0.04, 2.0), mats.black, 0, 0.26, 0.05));
+  for (const s of [-1, 1]) g.add(solid(new THREE.BoxGeometry(0.08, 1.7, 0.08), mats.metal, s * 0.5, 0.95, -1.05));
+  g.add(solid(rbox(1.1, 0.5, 0.25, 0.04), mats.frame, 0, 1.85, -1.05));
+  g.add(solid(new THREE.BoxGeometry(0.6, 0.3, 0.02), plastic('#3b8cff', { emissive: '#3b8cff', emissiveIntensity: 0.6 }), 0, 1.9, -0.92));
+  return g;
+}
+
+function createDumbbellRack(length) {
+  const g = new THREE.Group();
+  g.add(solid(rbox(0.9, 1.0, length, 0.04), mats.frame, 0, 0.5, 0));
+  const count = Math.floor(length / 0.6);
+  for (let i = 0; i < count; i++) {
+    const z = -length / 2 + 0.3 + i * 0.6;
+    for (const side of [-1, 1]) g.add(solid(new THREE.CylinderGeometry(0.16, 0.16, 0.14, 14), mats.black, 0.05, 1.12, z + side * 0.16).rotateX(Math.PI / 2));
+    g.add(solid(new THREE.CylinderGeometry(0.04, 0.04, 0.3, 8), mats.metal, 0.05, 1.12, z).rotateX(Math.PI / 2));
+  }
+  return g;
+}
+
+function createBench() {
+  const g = new THREE.Group();
+  g.add(solid(rbox(0.7, 0.2, 2.0, 0.05), plastic('#232323', { roughness: 0.7 }), 0, 0.9, 0));
+  for (const z of [-0.7, 0.7]) g.add(solid(new THREE.BoxGeometry(0.12, 0.8, 0.12), mats.metal, 0, 0.4, z));
+  // Rak barbel di kepala bangku.
+  for (const s of [-1, 1]) g.add(solid(new THREE.BoxGeometry(0.08, 1.6, 0.08), mats.metal, s * 0.6, 0.8, -1.0));
+  const bar = solid(new THREE.CylinderGeometry(0.035, 0.035, 2.4, 8), mats.metal, 0, 1.55, -1.0);
+  bar.rotation.z = Math.PI / 2;
+  g.add(bar);
+  for (const s of [-1, 1]) {
+    const plate = solid(new THREE.CylinderGeometry(0.32, 0.32, 0.1, 20), mats.black, s * 1.05, 1.55, -1.0);
+    plate.rotation.z = Math.PI / 2;
+    g.add(plate);
+  }
+  return g;
+}
+
+// Kursi berjemur: dudukan setinggi kursi kerja agar pose duduk minifigure tetap pas; menghadap +z.
+function createLounger() {
+  const g = new THREE.Group();
+  g.add(solid(rbox(1.2, 0.5, 2.4, 0.06), mats.white, 0, 0.55, 0.45));
+  g.add(solid(rbox(1.1, 0.24, 2.3, 0.08), plastic('#2f9fd0', { roughness: 0.8, clearcoat: 0 }), 0, 0.92, 0.45));
+  const back = solid(rbox(1.1, 1.2, 0.22, 0.06), plastic('#2f9fd0', { roughness: 0.8, clearcoat: 0 }), 0, 1.45, -0.6);
+  back.rotation.x = -0.35;
+  g.add(back);
+  return g;
+}
+
+function buildGym(scene, area, parts) {
+  const { x0, z0, w, d } = area;
+  floorPatch(scene, carpetTexture('#3a3d42'), 'carpet', x0, z0, w, d, 0.1);
+  // Dinding kaca ke arah lorong (kiri) dengan pintu, dan ke arah kolam (depan) tanpa pintu.
+  glassWall(scene, parts.blockers, [x0, z0], [x0, z0 + d], 2.4, 0.5);
+  glassWall(scene, parts.blockers, [x0, z0 + d], [x0 + w, z0 + d]);
+  const plate = signBoard(area.name, '#3a3d42', 2.2);
+  plate.position.set(x0, WALL_HEIGHT + 0.5, z0 + d / 2);
+  plate.rotation.y = -Math.PI / 2;
+  scene.add(plate);
+
+  // Dinding cermin di belakang treadmill.
+  scene.add(solid(new THREE.BoxGeometry(w - 2, 2.6, 0.06), plastic('#dfe6ec', { metalness: 1, roughness: 0.05, clearcoat: 1 }), x0 + w / 2, 1.6, z0 + 0.12));
+
+  const spots = [];
+  for (const tx of [x0 + 3.2, x0 + 6.6, x0 + 10]) {
+    const treadmill = createTreadmill();
+    treadmill.position.set(tx, 0, z0 + 3.6);
+    scene.add(treadmill);
+    // Hanya konsol yang menghalangi; dek dipijak karyawan yang berlari.
+    parts.circles.push([tx, z0 + 2.55, 0.5]);
+    spots.push({ x: tx, z: z0 + 3.9, yaw: Math.PI, kind: 'treadmill', lift: 0.28 });
+  }
+
+  const rack = createDumbbellRack(6);
+  rack.position.set(x0 + w - 1, 0, z0 + 10.5);
+  scene.add(rack);
+  parts.obstacles.push(rack);
+  for (const z of [z0 + 9.2, z0 + 11.8]) spots.push({ x: x0 + w - 2.7, z, yaw: Math.PI / 2, kind: 'weights' });
+
+  const bench = createBench();
+  bench.position.set(x0 + 6, 0, z0 + 11);
+  scene.add(bench);
+  parts.obstacles.push(bench);
+
+  for (const [i, color] of ['#8e5bb5', '#1f9a8a', '#c0602b'].entries()) {
+    scene.add(solid(rbox(1.0, 0.05, 2.2, 0.02), plastic(color, { roughness: 0.9, clearcoat: 0 }), x0 + 3 + i * 1.6, 0.06, z0 + 16.5));
+  }
+  const plant = createPlant(1.1);
+  plant.position.set(x0 + w - 0.9, 0, z0 + d - 1);
+  scene.add(plant);
+  parts.circles.push([plant.position.x, plant.position.z, 0.5]);
+  parts.gym = { spots };
+}
+
+function buildPool(scene, area, parts) {
+  const { x0, z0, w, d } = area;
+  floorPatch(scene, tileTexture('#dde6ea'), 'tile', x0, z0, w, d, 0.1);
+  glassWall(scene, parts.blockers, [x0, z0], [x0, z0 + d], 2.4, 0.5);
+  glassWall(scene, parts.blockers, [x0, z0], [x0 + w, z0]);
+  const plate = signBoard(area.name, '#2f9fd0', 2.6);
+  plate.position.set(x0, WALL_HEIGHT + 0.5, z0 + d / 2);
+  plate.rotation.y = -Math.PI / 2;
+  scene.add(plate);
+
+  // Kolam dibuat sebagai bak rendah: tepi putih, dasar biru tua, permukaan air bening.
+  const cx = x0 + w / 2;
+  const pz0 = z0 + 5;
+  const pz1 = z0 + d - 3;
+  const pl = pz1 - pz0;
+  const cz = (pz0 + pz1) / 2;
+  const pw = 9;
+  const rim = solid(rbox(pw + 0.8, 0.55, pl + 0.8, 0.06), mats.white, cx, 0.27, cz);
+  scene.add(rim);
+  parts.obstacles.push(rim);
+  scene.add(solid(new THREE.BoxGeometry(pw, 0.05, pl), plastic('#1f6f9a', { roughness: 0.6, clearcoat: 0 }), cx, 0.56, cz));
+  const water = new THREE.Mesh(
+    new THREE.BoxGeometry(pw, 0.04, pl),
+    new THREE.MeshPhysicalMaterial({ color: '#4cc3ec', transparent: true, opacity: 0.72, roughness: 0.04, clearcoat: 1, emissive: '#1d7fae', emissiveIntensity: 0.25 }),
+  );
+  water.position.set(cx, 0.6, cz);
+  scene.add(water);
+  // Tali lintasan merah-putih.
+  for (const lx of [cx - pw / 6, cx + pw / 6]) {
+    for (let i = 0; i < Math.floor(pl / 0.5); i++) {
+      scene.add(solid(new THREE.SphereGeometry(0.11, 10, 8), plastic(i % 4 < 2 ? '#d63b3b' : '#f4f2ec'), lx, 0.64, pz0 + 0.25 + i * 0.5));
+    }
+  }
+  // Tangga di pojok depan.
+  for (const s of [-1, 1]) {
+    const rail = solid(new THREE.TorusGeometry(0.35, 0.04, 8, 16, Math.PI), mats.metal, cx + pw / 2 - 1.2 + s * 0.3, 0.6, pz1 + 0.1);
+    rail.rotation.y = Math.PI / 2;
+    scene.add(rail);
+  }
+
+  // Kursi berjemur di sisi belakang kolam, menghadap kolam dan kamera.
+  const seats = [];
+  for (const lx of [x0 + 2.6, x0 + 5.6, x0 + 10.4, x0 + 13.4]) {
+    const lounger = createLounger();
+    lounger.position.set(lx, 0, z0 + 1.2);
+    scene.add(lounger);
+    parts.obstacles.push(lounger);
+    seats.push(seatSpot(lounger, 0, 'lounge', 2.4)); // kursi berjemur panjang: berdiri di ujung kakinya
+  }
+  // Payung di antara kursi.
+  for (const ux of [x0 + 4.1, x0 + 11.9]) {
+    scene.add(solid(new THREE.CylinderGeometry(0.05, 0.05, 3.2, 8), mats.metal, ux, 1.6, z0 + 1.6));
+    scene.add(solid(new THREE.ConeGeometry(1.4, 0.6, 16), plastic('#f5cb18', { roughness: 0.8, clearcoat: 0 }), ux, 3.3, z0 + 1.6));
+  }
+  for (const [px, pz] of [[x0 + 0.9, z0 + d - 1], [x0 + w - 0.9, z0 + d - 1]]) {
+    const plant = createPlant(1.2);
+    plant.position.set(px, 0, pz);
+    scene.add(plant);
+    parts.circles.push([px, pz, 0.55]);
+  }
+  parts.pool = { seats };
+}
+
 // ---------- Bangunan ----------
 
 function buildShell(scene, layout, parts) {
@@ -576,7 +737,7 @@ function buildShell(scene, layout, parts) {
 // Titik lampu ruangan untuk malam hari: di atas tiap divisi, ruangan, hub, dan resepsionis.
 function lightSpots(layout) {
   const center = (a) => [a.x0 + a.w / 2, a.z0 + a.d / 2];
-  const spots = [...layout.rooms, ...layout.zones, layout.reception].map(center);
+  const spots = [...layout.rooms, ...layout.zones, layout.reception, layout.gym, layout.pool].map(center);
   const { x0, z0, w, d } = layout.hub;
   for (let z = z0 + 6; z < z0 + d; z += 13) spots.push([x0 + w / 2, z]);
   return spots;
@@ -593,6 +754,8 @@ export function buildWorld(scene, layout, { name = 'MY Office' } = {}) {
     ceoDesk: null,
     pantry: null,
     lounge: null,
+    gym: null,
+    pool: null,
     ambience: null,
     lightSpots: lightSpots(layout),
   };
@@ -602,5 +765,7 @@ export function buildWorld(scene, layout, { name = 'MY Office' } = {}) {
   for (const planter of layout.planters) buildPlanter(scene, planter, parts);
   buildReception(scene, layout.reception, parts, name);
   buildHub(scene, layout.hub, parts);
+  buildGym(scene, layout.gym, parts);
+  buildPool(scene, layout.pool, parts);
   return parts;
 }

@@ -29,7 +29,7 @@
       "color": "#8e5bb5",
       "desks": 6,
       "roles": {
-        "designer": { "label": "Designer", "description": "Merancang UI/UX, palet warna, tipografi, dan aset visual proyek.", "tools": "Read, Edit, Write, Grep, Glob", "shirt": "#b77fd6", "pants": "#3a3a3a", "hair": "#c9a227", "face": "grin", "print": "letter", "accessory": ["glasses"] }
+        "designer": { "label": "UI/UX Designer", "description": "Merancang UI/UX, palet warna, tipografi, dan aset visual proyek.", "tools": "Read, Edit, Write, Grep, Glob", "shirt": "#b77fd6", "pants": "#3a3a3a", "hair": "#c9a227", "face": "grin", "print": "letter", "accessory": ["glasses"] }
       }
     },
     {

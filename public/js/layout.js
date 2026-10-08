@@ -7,8 +7,8 @@
 //   │ ══════ lorong utama ══════    │       │              │
 //   │ divisi 🌿 divisi 🌿 divisi    │       │              │  ← area kerja terbuka (open plan),
 //   ├───────────────────────────────┤       │              │    divisi dibatasi pot tanaman
-//   │ Resepsionis + dinding logo    │       │              │
-//   └───────────────────────────────┘       └──────────────┘
+//   │ Resepsionis + dinding logo    │       │              │  ← di kanannya lagi: sayap olahraga
+//   └───────────────────────────────┘       └──────────────┘    (gym di belakang, kolam renang di depan)
 
 export const DESK_WIDTH = 2.6; // lebar meja; meja dalam satu baris saling menempel
 const ROW_GAP = 4; // jarak antar baris meja yang saling berhadapan (punggung meja menempel)
@@ -22,6 +22,8 @@ const MARGIN = 1.2; // jarak dari dinding luar
 const ROOM_DEPTH = 13; // cukup dalam untuk meja U yang memanjang
 const CEO_ROOM_WIDTH = 15;
 const HUB_WIDTH = 14;
+const SPORTS_WIDTH = 16; // sayap olahraga: gym di belakang, kolam renang di depan
+const GYM_DEPTH = 20;
 const RECEPTION_DEPTH = 7;
 
 function divisionZone(division) {
@@ -50,7 +52,7 @@ export function computeLayout(config) {
 
   const blockWidth = PER_ROW * ZONE_WIDTH + (PER_ROW - 1) * PLANTER_GAP;
   const workEnd = MARGIN + blockWidth; // tepi kanan area kerja
-  const width = workEnd + AISLE + HUB_WIDTH + MARGIN;
+  const width = workEnd + AISLE + HUB_WIDTH + AISLE + SPORTS_WIDTH + MARGIN;
 
   // Koordinat sementara dimulai dari pojok kiri belakang (0, 0).
   const rooms = [
@@ -71,11 +73,14 @@ export function computeLayout(config) {
   const reception = { id: 'reception', kind: 'reception', name: 'Resepsionis', x0: MARGIN, z0: z, w: blockWidth, d: RECEPTION_DEPTH };
   const depth = z + RECEPTION_DEPTH + MARGIN;
   const hub = { id: 'hub', kind: 'hub', name: 'Social Hub', x0: workEnd + AISLE, z0: MARGIN, w: HUB_WIDTH, d: depth - MARGIN * 2 };
+  const sportsX = hub.x0 + HUB_WIDTH + AISLE;
+  const gym = { id: 'gym', kind: 'gym', name: 'Gym', x0: sportsX, z0: MARGIN, w: SPORTS_WIDTH, d: GYM_DEPTH };
+  const pool = { id: 'pool', kind: 'pool', name: 'Kolam Renang', x0: sportsX, z0: MARGIN + GYM_DEPTH + AISLE, w: SPORTS_WIDTH, d: depth - MARGIN * 2 - GYM_DEPTH - AISLE };
 
   // Geser semua koordinat agar pusat lantai di (0, 0).
   const ox = width / 2;
   const oz = depth / 2;
-  for (const item of [...rooms, ...zones, reception, hub]) {
+  for (const item of [...rooms, ...zones, reception, hub, gym, pool]) {
     item.x0 -= ox;
     item.z0 -= oz;
   }
@@ -86,5 +91,5 @@ export function computeLayout(config) {
   }
   for (const zone of zones) zone.slots = deskSlots(zone);
 
-  return { width, depth, rooms, zones, planters, reception, hub };
+  return { width, depth, rooms, zones, planters, reception, hub, gym, pool };
 }

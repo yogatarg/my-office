@@ -109,47 +109,105 @@ export function createDetailPanel({ root, tracker, office, config }) {
   return { select, refresh: () => key && render() };
 }
 
+// ---------- Panel yang bisa diciutkan ----------
+
+// Penyimpanan per browser; bisa diblokir (mode privat), jadi selalu dibungkus try/catch.
+function remember(key, fallback) {
+  try {
+    return localStorage.getItem(key) ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+function store(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {}
+}
+
+// Menciutkan/menampilkan panel lewat tombol; statusnya diingat browser.
+// labels: [teks saat terbuka, teks saat diciutkan].
+export function collapsible({ root, button, key, labels }) {
+  let collapsed = remember(key, 'open') === 'collapsed';
+  const apply = () => {
+    root.classList.toggle('collapsed', collapsed);
+    button.textContent = collapsed ? labels[1] : labels[0];
+    button.setAttribute('aria-expanded', String(!collapsed));
+    button.title = collapsed ? 'Tampilkan' : 'Sembunyikan';
+  };
+  button.addEventListener('click', () => {
+    collapsed = !collapsed;
+    store(key, collapsed ? 'collapsed' : 'open');
+    apply();
+  });
+  apply();
+}
+
 // ---------- Navigasi zona ----------
 
 export function createZoneBar({ root, office }) {
+  const list = root.querySelector('.zone-list');
   const add = (label, onClick) => {
     const button = el('button', '', label);
     button.type = 'button';
     button.addEventListener('click', onClick);
-    root.append(button);
+    list.append(button);
   };
   add('Semua', () => office.overview());
   for (const zone of office.zones) {
     add(zone.name, () => office.flyTo(zone.x0 + zone.w / 2, zone.z0 + zone.d / 2, zone.kind === 'hub' ? 1.6 : 2.6));
   }
+  collapsible({ root, button: root.querySelector('.panel-toggle'), key: 'my-office-zones', labels: ['☰ Ruangan ▾', '☰ Ruangan ▸'] });
 }
 
 // ---------- Minimap ----------
 
-export function createMinimap({ canvas, office, tracker }) {
+const MINIMAP_SIZES = [140, 200, 280, 380]; // lebar dalam piksel
+
+export function createMinimap({ root, office, tracker }) {
+  const canvas = root.querySelector('canvas');
   const { width, depth } = office.floor;
-  const W = 180;
-  const H = Math.round((W * depth) / width);
-  const ratio = window.devicePixelRatio || 1;
-  canvas.width = W * ratio;
-  canvas.height = H * ratio;
-  canvas.style.width = `${W}px`;
-  canvas.style.height = `${H}px`;
   const g = canvas.getContext('2d');
-  g.scale(ratio, ratio);
+  let level = Math.min(MINIMAP_SIZES.length - 1, Math.max(0, Number(remember('my-office-minimap-size', 1)) || 0));
+  let W = 0;
+  let H = 0;
+
+  function resize() {
+    W = MINIMAP_SIZES[level];
+    H = Math.round((W * depth) / width);
+    const ratio = window.devicePixelRatio || 1;
+    canvas.width = W * ratio;
+    canvas.height = H * ratio;
+    canvas.style.width = `${W}px`;
+    canvas.style.height = `${H}px`;
+    g.setTransform(ratio, 0, 0, ratio, 0, 0);
+    root.querySelector('[data-zoom="-1"]').disabled = level === 0;
+    root.querySelector('[data-zoom="1"]').disabled = level === MINIMAP_SIZES.length - 1;
+    draw();
+  }
 
   const toMap = (x, z) => [((x + width / 2) / width) * W, ((z + depth / 2) / depth) * H];
   const toWorld = (mx, my) => [(mx / W) * width - width / 2, (my / H) * depth - depth / 2];
 
   function draw() {
+    if (root.classList.contains('collapsed')) return;
     g.clearRect(0, 0, W, H);
     g.fillStyle = '#e4e2dd';
     g.fillRect(0, 0, W, H);
     for (const zone of office.zones) {
       const [x, y] = toMap(zone.x0, zone.z0);
+      const zw = (zone.w / width) * W;
+      const zd = (zone.d / depth) * H;
       g.globalAlpha = 0.55;
       g.fillStyle = zone.color;
-      g.fillRect(x, y, (zone.w / width) * W, (zone.d / depth) * H);
+      g.fillRect(x, y, zw, zd);
+      // Nama ruangan baru muat ditulis saat minimap cukup besar.
+      if (W >= 280) {
+        g.globalAlpha = 0.85;
+        g.fillStyle = '#1d1f23';
+        g.font = `700 ${W >= 380 ? 11 : 9}px Manrope, sans-serif`;
+        g.fillText(zone.name, x + 3, y + (W >= 380 ? 13 : 11), zw - 6);
+      }
     }
     g.globalAlpha = 1;
     for (const { key, x, z } of office.positions()) {
@@ -157,8 +215,9 @@ export function createMinimap({ canvas, office, tracker }) {
       if (!agent) continue;
       const [mx, my] = toMap(x, z);
       const active = agent.status !== 'asleep';
+      const r = (active ? 3.6 : 2.6) * Math.max(1, W / 200);
       g.beginPath();
-      g.arc(mx, my, active ? 3.6 : 2.6, 0, Math.PI * 2);
+      g.arc(mx, my, r, 0, Math.PI * 2);
       g.fillStyle = active ? agent.style.accent : '#6b6e74';
       g.fill();
       g.lineWidth = 1.2;
@@ -167,13 +226,22 @@ export function createMinimap({ canvas, office, tracker }) {
     }
   }
 
+  for (const button of root.querySelectorAll('[data-zoom]')) {
+    button.addEventListener('click', () => {
+      level = Math.min(MINIMAP_SIZES.length - 1, Math.max(0, level + Number(button.dataset.zoom)));
+      store('my-office-minimap-size', String(level));
+      resize();
+    });
+  }
   canvas.addEventListener('click', (e) => {
     const rect = canvas.getBoundingClientRect();
     const [x, z] = toWorld(e.clientX - rect.left, e.clientY - rect.top);
     office.flyTo(x, z, 2.6);
   });
+  collapsible({ root, button: root.querySelector('.panel-toggle'), key: 'my-office-minimap', labels: ['▾', '▸'] });
+  root.querySelector('.panel-toggle').addEventListener('click', draw);
   setInterval(draw, 250);
-  draw();
+  resize();
 }
 
 // ---------- Notifikasi ----------

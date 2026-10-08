@@ -1,7 +1,7 @@
 import { createTracker } from './agents.js';
 import { createOffice, QUALITY } from './office.js';
 import { loadConfig } from './config.js';
-import { createDetailPanel, createZoneBar, createMinimap, createNotifier, createSummary } from './ui.js';
+import { createDetailPanel, createZoneBar, createMinimap, createNotifier, createSummary, collapsible } from './ui.js';
 
 const FEED_LIMIT = 7;
 const feed = document.getElementById('feed');
@@ -56,7 +56,9 @@ qualityButton.addEventListener('click', () => {
 
 const detail = createDetailPanel({ root: document.getElementById('detail'), tracker, office, config });
 createZoneBar({ root: document.getElementById('zones'), office });
-createMinimap({ canvas: document.querySelector('#minimap canvas'), office, tracker });
+createMinimap({ root: document.getElementById('minimap'), office, tracker });
+const activity = document.getElementById('activity');
+collapsible({ root: activity, button: activity.querySelector('.panel-toggle'), key: 'my-office-activity', labels: ['▾ Sembunyikan', '▸ Tampilkan'] });
 const notifier = createNotifier({ button: document.getElementById('notify') });
 createSummary({ button: document.getElementById('summary-button'), root: document.getElementById('summary'), config, tracker });
 

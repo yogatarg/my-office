@@ -150,6 +150,8 @@ Open plan seperti kantor modern: dinding hanya untuk ruangan yang butuh privasi.
   lama bekerja, jumlah tugas selesai, file yang disentuh, dan riwayat aktivitas. Tombol *Ikuti dengan kamera*
   membuat kamera mengikutinya; menyeret kamera menghentikannya.
 - **Navigasi zona** di kiri bawah dan **minimap** di kanan atas (klik untuk memindahkan kamera).
+  Minimap punya empat ukuran (tombol − dan +); di ukuran besar nama ruangan ikut tampil.
+- Panel **Aktivitas**, daftar **Ruangan**, dan **Minimap** bisa diciutkan dan ditampilkan lagi; statusnya diingat browser.
 - **Notifikasi** (tombol di header): bunyi saat CEO selesai atau butuh perhatian, ditambah notifikasi sistem
   bila tab kantor sedang tidak dilihat.
 

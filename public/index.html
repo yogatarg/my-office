@@ -87,12 +87,28 @@
     /* Navigasi zona */
     #zones { position: fixed; left: 16px; bottom: 16px; z-index: 2; display: flex; gap: 6px; max-width: calc(100vw - 390px); overflow-x: auto; padding: 8px; }
     #zones { scrollbar-width: thin; scrollbar-color: rgba(0,0,0,.25) transparent; }
+    .zone-list { display: flex; gap: 6px; }
+    #zones.collapsed .zone-list { display: none; }
+    #zones .panel-toggle { background: var(--ink); color: #fff; border-color: var(--ink); }
     #zones button { flex: none; font: 700 11.5px 'Manrope', sans-serif; border: 1px solid rgba(0,0,0,.12); background: #fff; border-radius: 8px; padding: 5px 9px; cursor: pointer; }
     #zones button:hover { background: var(--yellow); }
 
     /* Minimap */
     #minimap { position: fixed; right: 16px; top: 16px; z-index: 2; padding: 8px; }
-    #minimap canvas { display: block; border-radius: 8px; cursor: pointer; }
+    #minimap canvas { display: block; border-radius: 8px; cursor: pointer; margin-top: 6px; }
+    #minimap.collapsed canvas, #minimap.collapsed [data-zoom] { display: none; }
+
+    /* Kepala panel yang bisa diciutkan */
+    .panel-head { display: flex; align-items: center; gap: 8px; }
+    .panel-head h2 { margin: 0; font: 600 11px 'Unbounded', sans-serif; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+    .panel-head .panel-toggle, .minimap-tools button { margin-left: auto; font: 700 11.5px 'Manrope', sans-serif; border: 1px solid rgba(0,0,0,.12); background: #fff; border-radius: 7px; padding: 3px 8px; cursor: pointer; }
+    .minimap-tools { margin-left: auto; display: flex; gap: 4px; }
+    .minimap-tools button { margin: 0; min-width: 26px; }
+    .minimap-tools button:disabled { opacity: .35; cursor: default; }
+    #activity.collapsed #feed { display: none; }
+    #activity.collapsed { width: auto; }
+    #activity .panel-head { margin-bottom: 6px; }
+    #activity.collapsed .panel-head { margin-bottom: 0; }
 
     aside {
       position: fixed; right: 16px; bottom: 16px; z-index: 2; width: min(340px, calc(100vw - 32px));
@@ -167,10 +183,26 @@
   </header>
   <section id="detail" class="panel" hidden aria-live="polite"></section>
   <section id="summary" class="panel" hidden role="dialog" aria-label="Ringkasan kerja"></section>
-  <nav id="zones" class="panel" aria-label="Pindah ke zona"></nav>
-  <div id="minimap" class="panel" title="Klik untuk memindahkan kamera"><canvas aria-label="Minimap kantor"></canvas></div>
-  <aside>
-    <h2>Aktivitas</h2>
+  <nav id="zones" class="panel" aria-label="Pindah ke zona">
+    <button class="panel-toggle" type="button" aria-controls="zone-list">☰ Ruangan ▾</button>
+    <div class="zone-list" id="zone-list"></div>
+  </nav>
+  <div id="minimap" class="panel">
+    <div class="panel-head">
+      <h2>Minimap</h2>
+      <div class="minimap-tools">
+        <button type="button" data-zoom="-1" title="Perkecil minimap" aria-label="Perkecil minimap">−</button>
+        <button type="button" data-zoom="1" title="Perbesar minimap" aria-label="Perbesar minimap">+</button>
+        <button type="button" class="panel-toggle" aria-controls="minimap-canvas">▾</button>
+      </div>
+    </div>
+    <canvas id="minimap-canvas" aria-label="Minimap kantor. Klik untuk memindahkan kamera." title="Klik untuk memindahkan kamera"></canvas>
+  </div>
+  <aside id="activity">
+    <div class="panel-head">
+      <h2>Aktivitas</h2>
+      <button type="button" class="panel-toggle" aria-controls="feed">▾ Sembunyikan</button>
+    </div>
     <ul id="feed"></ul>
   </aside>
   <script type="module" src="/js/main.js"></script>

@@ -40,6 +40,9 @@ cd playground && claude               # beri perintah, mis. "buatkan website tok
 - `workspace` di `office.config.json` (bawaan `C:/laragon/www`) diberikan ke Claude Code lewat
   `permissions.additionalDirectories`. Setiap edit dan perintah tetap meminta izin seperti biasa.
 - `playground/CLAUDE.md` adalah pedoman CEO: alur proyek baru (PM → DevOps → divisi → QA → laporan).
+- Tempat hasil kerja: pertanyaan ringan dijawab di chat; dokumen (riset, data, rekomendasi) disimpan di
+  `playground/catatan/YYYY-MM-DD-judul.md`; proyek dibuat sebagai folder sendiri di workspace. Isi playground
+  selain konfigurasi diabaikan git, jadi hasil kerja tim tidak ikut terpublikasi.
 - `npm run sync` membuat `.claude/agents/<peran>.md` untuk peran baru di konfigurasi; file yang sudah ada tidak ditimpa.
 - Kantor mengenali proyek yang sedang dikerjakan dari path file dan menampilkannya di header.
 

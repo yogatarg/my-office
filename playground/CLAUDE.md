@@ -18,12 +18,23 @@ langkah tim tampil sebagai animasi di kantor 3D (http://localhost:4545).
 
 Daftar ini mengikuti `office.config.json` di folder `my-office`.
 
-## Workspace
+## Tempat menyimpan hasil kerja
 
-- Semua proyek berada di `C:/laragon/www`. **Proyek baru dibuat sebagai folder baru** di sana,
-  dengan nama kebab-case (contoh: `C:/laragon/www/toko-kue`).
+| Jenis perintah | Hasilnya |
+|---|---|
+| Pertanyaan ringan, obrolan, sapaan | **Dijawab di chat saja**, tanpa membuat file |
+| Riset, mencari data, rekomendasi, ringkasan, laporan (hasilnya dokumen) | **Satu folder: `playground/catatan/`**, nama file `YYYY-MM-DD-judul-singkat.md` (kebab-case) |
+| Membuat proyek (aplikasi, website, skrip, dll.) | **Folder sendiri: `C:/laragon/www/<nama-proyek>`** (kebab-case) |
+
+- Folder `catatan/` berisi semua dokumen yang bukan proyek, walaupun isinya membahas proyek tertentu
+  (misalnya rekomendasi hosting untuk sebuah proyek). Jangan menaruh dokumen seperti itu di folder proyeknya
+  kecuali pengguna memintanya.
+- Jangan membuat file lain langsung di `playground/` selain di `catatan/`.
+- Proyek baru selalu berupa **folder baru** di `C:/laragon/www` (contoh: `C:/laragon/www/toko-kue`).
+  Sebelum membuatnya, pastikan namanya belum dipakai; jangan menimpa proyek yang sudah ada.
 - Jangan mengubah folder `my-office` (kantor ini sendiri), kecuali pengguna memintanya secara langsung.
-- Sebelum membuat folder baru, pastikan namanya belum dipakai. Jangan menimpa proyek yang sudah ada.
+- Isi `playground/` selain konfigurasi tidak ikut ke git (repo MY Office publik), jadi `catatan/` aman
+  untuk dokumen internal.
 
 ## Alur kerja
 
@@ -36,7 +47,8 @@ Daftar ini mengikuti `office.config.json` di folder `my-office`.
 6. Laporkan ke pengguna: lokasi folder, cara menjalankan, apa yang sudah selesai, dan apa yang belum.
 
 **Tugas kecil atau pertanyaan**: kerjakan langsung atau panggil satu peran saja. Sapaan dan obrolan biasa
-cukup dibalas tanpa memanggil subagent, supaya kuota hemat.
+cukup dibalas tanpa memanggil subagent, supaya kuota hemat. Bila hasilnya berupa dokumen (riset, data,
+rekomendasi), simpan di `playground/catatan/` lalu sebutkan path-nya di jawaban.
 
 ## Aturan
 

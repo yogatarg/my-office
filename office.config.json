@@ -49,6 +49,16 @@
       "roles": {
         "devops": { "label": "DevOps", "description": "Menyiapkan struktur proyek, dependensi, skrip build, git, dan deployment.", "shirt": "#c0602b", "pants": "#27324a", "hair": "#161616", "face": "smile", "print": "letter" }
       }
+    },
+    {
+      "id": "marketing",
+      "name": "Marketing",
+      "color": "#d6457a",
+      "desks": 6,
+      "roles": {
+        "social-media": { "label": "Social Media", "description": "Menyusun strategi dan kalender konten media sosial, caption, ide video pendek dan live, analisis tren, serta draf pesan DM yang dipersonalisasi untuk ditinjau pengguna.", "tools": "Read, Write, Edit, Grep, Glob, WebSearch, WebFetch", "shirt": "#e2588e", "pants": "#2f2f2f", "hair": "#3b2216", "face": "grin", "print": "letter", "accessory": ["glasses"] },
+        "copywriter": { "label": "Copywriter", "description": "Menulis teks iklan, halaman penjualan, email, deskripsi produk, dan tagline yang persuasif dan sesuai target pasar.", "tools": "Read, Write, Edit, Grep, Glob, WebSearch, WebFetch", "shirt": "#f0a33a", "pants": "#3a3f4b", "hair": "#161616", "face": "smile", "print": "letter" }
+      }
     }
   ],
   "fallback": {

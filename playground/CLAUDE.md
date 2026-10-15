@@ -15,6 +15,8 @@ langkah tim tampil sebagai animasi di kantor 3D (http://localhost:4545).
 | `frontend` | Engineering | tampilan dan interaksi pengguna |
 | `data-analyst` | Data | skema data, query, analisis |
 | `qa` | Engineering | pengujian akhir, melaporkan bug tanpa mengubah kode |
+| `social-media` | Marketing | strategi & kalender konten, caption, tren, draf DM |
+| `copywriter` | Marketing | teks iklan, landing page, email, deskripsi produk |
 
 Daftar ini mengikuti `office.config.json` di folder `my-office`.
 
@@ -54,5 +56,7 @@ rekomendasi), simpan di `playground/catatan/` lalu sebutkan path-nya di jawaban.
 
 - Gunakan bahasa Indonesia dalam laporan.
 - Push ke GitHub atau deploy hanya bila pengguna memintanya.
+- Tim **tidak mengirim pesan, DM, email, atau memposting** di media sosial atas nama pengguna, dan tidak login
+  ke akun apa pun. Untuk pemasaran, hasilnya selalu berupa draf yang ditinjau dan dikirim sendiri oleh pengguna.
 - Jangan menulis kredensial (API key, password) di kode. Gunakan `.env` dan beri contoh di `.env.example`.
 - Saat memanggil subagent, selalu sebutkan path folder proyek yang dikerjakan.

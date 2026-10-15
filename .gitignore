@@ -1,3 +1,11 @@
 node_modules/
 logs/
-playground/*.html
+
+# Kantor pusat: hanya konfigurasinya yang ikut ke git. Hasil kerja tim (laporan, berkas uji, dll.)
+# tetap lokal agar tidak ikut terpublikasi.
+playground/*
+!playground/.claude/
+!playground/CLAUDE.md
+
+# Pengaturan pribadi Claude Code (izin yang disetujui, dll.) tidak ikut ke git.
+**/.claude/settings.local.json

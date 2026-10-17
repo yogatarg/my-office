@@ -15,6 +15,7 @@ npm install
 npm run dev            # kantor: http://localhost:4545, log mentah: /log.html
 npm run replay         # putar ulang rekaman samples/todo-run.jsonl tanpa Claude Code
 npm run replay -- samples/pm-delegation.jsonl   # rekaman PM memanggil QA
+npm run replay -- samples/marketing-chat.jsonl  # bicara langsung dengan Kepala Marketing
 ```
 
 Lalu di terminal lain jalankan Claude Code di folder `playground/`, yang sudah berisi
@@ -46,6 +47,22 @@ cd playground && claude               # beri perintah, mis. "buatkan website tok
 - `npm run sync` membuat `.claude/agents/<peran>.md` untuk peran baru di konfigurasi; file yang sudah ada tidak ditimpa.
 - Kantor mengenali proyek yang sedang dikerjakan dari path file dan menampilkannya di header.
 
+### Bicara langsung dengan satu karyawan
+
+```bash
+npm run chat                          # daftar peran yang bisa diajak bicara
+npm run chat -- marketing-lead        # sesi langsung dengan Kepala Marketing (tanpa lewat CEO)
+npm run chat -- marketing-lead --continue   # lanjutkan obrolan terakhir
+```
+
+- Menjalankan `claude --agent <peran>` di folder playground. Pedoman CEO memberi pengecualian untuk mode ini,
+  jadi agen tetap memakai perannya sendiri.
+- **Kepala Marketing** (`marketing-lead`) membagi tugas ke Social Media dan Copywriter
+  (`tools: Agent(social-media, copywriter)`) dan boleh menjalankan `npm run suara`, `render`, `buat-video` di proyek
+  Remotion `C:/laragon/www/remotion-video` untuk video narasi.
+- Di kantor 3D, karyawan yang diajak bicara tetap di mejanya dengan status "Menunggu kamu", dan dialah yang
+  duduk di kursi kepala ruang rapat saat bawahannya melapor.
+
 ## Tahapan
 
 - [x] **Tahap 1** — hooks → server → event log di browser (tanpa grafis)
@@ -73,6 +90,12 @@ Diuji dengan `samples/pm-delegation.jsonl` (agen utama → pm → qa):
 - Subagent yang dipanggil berjalan di latar belakang: pm bisa selesai lebih dulu, dan **hasil qa dikirim
   ke agen utama** sebagai prompt `<task-notification>`, bukan ke pm.
 - Pada alur ini tidak muncul `SubagentHandback`, jadi karakter tidak berjalan ke ruang rapat.
+
+## Temuan mode `--agent` (Claude Code 2.1.302)
+
+- Pada sesi `claude --agent <peran>`, event agen utama membawa `agent_type: "<peran>"` **tanpa** `agent_id`.
+  Subagent tetap membawa keduanya, jadi keduanya bisa dibedakan.
+- Daftar `tools` mendukung `Agent(a, b)` untuk membatasi subagent yang boleh dipanggil.
 
 ## Divisi dan peran: `office.config.json`
 

@@ -68,7 +68,7 @@ export function firstLine(text, max = 90) {
 export function projectFinder(workspace, ignore = ['my-office']) {
   if (!workspace) return () => null;
   const base = workspace.replace(/\\/g, '/').replace(/\/+$/, '');
-  const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\export function createTracker(config) {');
+  const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const bash = base.replace(/^([A-Za-z]):/, (m, d) => `/${d.toLowerCase()}`);
   const pattern = new RegExp(`(?:${escape(base)}|${escape(bash)})/([^/\\s"'\`]+)`, 'i');
   return (e) => {
@@ -93,14 +93,20 @@ export function createTracker(config) {
     return config.roles.get(key)?.style ?? generatedStyle(key, config.fallback.color);
   }
 
+  const chairLabel = () => [...agents.values()].find((a) => a.chair)?.style.label ?? lead;
+
   function toolDetail(e) {
     const input = e.tool_input ?? {};
     if (input.subagent_type) return `→ ${styleFor(input.subagent_type).label}`;
     if (input.file_path) return basename(input.file_path);
     if (input.pattern) return input.pattern;
     if (input.command) return input.command.split('\n')[0];
-    return e.tool_name === 'SubagentHandback' ? `ke ${lead}` : e.tool_name ?? '';
+    return e.tool_name === 'SubagentHandback' ? `ke ${chairLabel()}` : e.tool_name ?? '';
   }
+
+  // Sesi bicara langsung (`claude --agent <peran>`): event agen utama membawa agent_type tanpa agent_id.
+  // Subagent selalu punya agent_id.
+  const isDirect = (e) => Boolean(e.agent_type && !e.agent_id);
 
   function get(key) {
     if (!agents.has(key)) {
@@ -127,6 +133,8 @@ export function createTracker(config) {
         startedAt: null, // waktu mulai tugas yang sedang berjalan
         workedMs: 0, // total lama bekerja sejak halaman dibuka
         tasksDone: 0,
+        direct: false, // sedang diajak bicara langsung oleh pengguna
+        chair: key === 'main', // yang memimpin rapat saat ada laporan masuk
       });
     }
     return agents.get(key);
@@ -163,6 +171,18 @@ export function createTracker(config) {
       // Deskripsi tugas yang dibagikan menjadi "tugas saat ini" milik penerimanya.
       if (input.subagent_type && input.description) get(input.subagent_type).task = input.description;
     }
+    if (isDirect(e)) {
+      const isReport = /^<(agent-message|task-notification)/.test(String(e.prompt ?? ''));
+      if (e.hook_event_name === 'UserPromptSubmit' && !isReport) {
+        agent.task = firstLine(e.prompt);
+        if (agent.startedAt === null) agent.startedAt = now;
+      }
+      if (e.hook_event_name === 'Stop' && agent.startedAt !== null) {
+        agent.workedMs += Math.max(0, now - agent.startedAt);
+        agent.startedAt = null;
+        agent.tasksDone += 1;
+      }
+    }
     if (e.hook_event_name === 'SubagentStart') agent.startedAt = now;
     if (e.hook_event_name === 'SubagentStop' && agent.startedAt !== null) {
       agent.workedMs += Math.max(0, now - agent.startedAt);
@@ -183,6 +203,13 @@ export function createTracker(config) {
     if (e.agent_id && !e.agent_type) return null;
     const agent = get(e.agent_type ?? 'main');
     const name = agent.style.label;
+    // Yang menerima perintah dan laporan: CEO, atau karyawan yang sedang diajak bicara langsung.
+    const boss = agent.key === 'main' || isDirect(e) ? name : lead;
+    if (isDirect(e) && !agent.direct) {
+      agent.direct = true;
+      agent.place = 'desk';
+    }
+    if (agent.key === 'main' || isDirect(e)) for (const a of agents.values()) a.chair = a === agent;
     const project = projectOf(e);
     if (project) {
       agent.project = project;
@@ -192,12 +219,20 @@ export function createTracker(config) {
     switch (e.hook_event_name) {
       case 'SessionStart':
         show(agent, 'waiting', '', now);
-        return `Kantor dibuka, ${lead} siap menerima perintah`;
+        return agent.direct ? `${name} siap diajak bicara langsung` : `Kantor dibuka, ${lead} siap menerima perintah`;
 
       case 'SessionEnd':
+        if (agent.direct) {
+          agent.direct = false;
+          show(agent, 'asleep', '', now);
+          for (const a of agents.values()) a.chair = a.key === 'main';
+          return `${name} selesai mengobrol`;
+        }
         for (const a of agents.values()) {
           show(a, a.key === 'main' ? 'waiting' : 'asleep', '', now);
           a.place = 'desk';
+          a.direct = false;
+          a.chair = a.key === 'main';
         }
         return 'Kantor tutup';
 
@@ -208,7 +243,7 @@ export function createTracker(config) {
         show(agent, 'listening', isReport ? 'laporan masuk' : 'perintah baru', now);
         agent.decayAt = now + LISTEN_MS;
         if (!isReport) say(agent, e.prompt, now);
-        return isReport ? `${lead} menerima laporan` : `${lead} menerima perintah baru`;
+        return isReport ? `${boss} menerima laporan` : `${boss} menerima perintah baru`;
       }
 
       case 'PreToolUse': {
@@ -219,7 +254,7 @@ export function createTracker(config) {
           get(e.tool_input.subagent_type);
           say(agent, e.tool_input.description, now);
         }
-        if (agent.key !== 'main') {
+        if (agent.key !== 'main' && !agent.direct) {
           if (status === 'reporting') {
             agent.place = 'meeting';
             agent.reportDone = false;
@@ -251,12 +286,12 @@ export function createTracker(config) {
 
       case 'Stop':
         show(agent, 'waiting', '', now);
-        return `${lead} menunggu kamu`;
+        return `${boss} menunggu kamu`;
 
       case 'Notification':
         agent.alert = true;
         show(agent, 'waiting', '', now);
-        return e.notification_type === 'idle_prompt' ? `${lead} menunggu input kamu` : `${lead}: ${e.message ?? 'butuh perhatianmu'}`;
+        return e.notification_type === 'idle_prompt' ? `${boss} menunggu input kamu` : `${boss}: ${e.message ?? 'butuh perhatianmu'}`;
 
       default:
         return null;

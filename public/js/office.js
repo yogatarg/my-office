@@ -349,8 +349,11 @@ export function createOffice(container, config, { maxDelta = 0.05, quality = 'hi
   // Tempat yang dituju tampilan. Rapat dihitung sejak karakter tiba di ruang rapat,
   // karena perjalanan dari meja bisa lebih lama daripada jeda antar event.
   function effectivePlace(worker, agent, now) {
-    // CEO duduk di kursi kepala ruang rapat selama ada karyawan yang melapor.
-    if (agent.key === 'main') return meetingActive ? 'meeting-head' : 'desk';
+    // Pemimpin rapat (CEO, atau karyawan yang sedang diajak bicara langsung) duduk di kursi kepala
+    // ruang rapat selama ada karyawan yang melapor.
+    if (agent.chair && meetingActive) return 'meeting-head';
+    if (agent.key === 'main') return 'desk';
+    if (agent.direct) return agent.place;
     if (agent.place !== 'meeting') {
       worker.meetingUntil = 0;
       return agent.place;

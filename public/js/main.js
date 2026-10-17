@@ -79,9 +79,11 @@ function handle(event, now, live) {
   const agent = tracker.agents.get(event.agent_type ?? 'main');
   pushFeed(text, agent.style.accent, new Date(event.received_at ?? now));
   detail.refresh();
-  if (!live || event.agent_type) return;
-  if (event.hook_event_name === 'Notification') notifier.notify('CEO butuh perhatianmu', text);
-  if (event.hook_event_name === 'Stop') notifier.notify('CEO selesai', 'Menunggu perintahmu berikutnya.');
+  // Notifikasi hanya untuk agen utama sesi (CEO, atau karyawan yang diajak bicara langsung), bukan subagent.
+  if (!live || event.agent_id) return;
+  const name = agent.style.label;
+  if (event.hook_event_name === 'Notification') notifier.notify(`${name} butuh perhatianmu`, text);
+  if (event.hook_event_name === 'Stop') notifier.notify(`${name} selesai`, 'Menunggu perintahmu berikutnya.');
 }
 
 function connect() {

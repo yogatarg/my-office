@@ -22,6 +22,7 @@ langkah tim tampil sebagai animasi di kantor 3D (http://localhost:4545).
 | `marketing-lead` | Marketing | kepala marketing: membagi tugas ke social-media & copywriter, video narasi di `remotion-video` |
 | `social-media` | Marketing | strategi & kalender konten, caption, tren, draf DM |
 | `copywriter` | Marketing | teks iklan, landing page, email, deskripsi produk |
+| `youtube-creator` | Konten | channel YouTube: riset topik, naskah, suara & render di `youtube-<niche>`, paket unggah, evaluasi. Biasanya diajak bicara langsung lewat `npm run chat` |
 
 Daftar ini mengikuti `office.config.json` di folder `my-office`.
 

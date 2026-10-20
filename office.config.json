@@ -56,7 +56,7 @@
       "color": "#d6457a",
       "desks": 6,
       "roles": {
-        "marketing-lead": { "label": "Kepala Marketing", "description": "Teman bicara langsung pengguna untuk urusan pemasaran: membagi tugas ke Social Media dan Copywriter, merangkum hasilnya, dan membuat video narasi.", "tools": "Read, Write, Edit, Grep, Glob, WebSearch, WebFetch, Bash, Agent(social-media, copywriter)", "shirt": "#7d2a4c", "pants": "#1f1f24", "hair": "#6b3a1e", "face": "smile", "print": "suit", "tie": "#f0a33a" },
+        "marketing-lead": { "label": "Kepala Marketing", "description": "Teman bicara langsung pengguna untuk urusan pemasaran: membagi tugas ke Social Media dan Copywriter, merangkum hasilnya, dan membuat video narasi.", "tools": "Read, Write, Edit, Grep, Glob, WebSearch, WebFetch, Bash, Skill, Agent(social-media, copywriter)", "shirt": "#7d2a4c", "pants": "#1f1f24", "hair": "#6b3a1e", "face": "smile", "print": "suit", "tie": "#f0a33a" },
         "social-media": { "label": "Social Media", "description": "Menyusun strategi dan kalender konten media sosial, caption, ide video pendek dan live, analisis tren, serta draf pesan DM yang dipersonalisasi untuk ditinjau pengguna.", "tools": "Read, Write, Edit, Grep, Glob, WebSearch, WebFetch", "shirt": "#e2588e", "pants": "#2f2f2f", "hair": "#3b2216", "face": "grin", "print": "letter", "accessory": ["glasses"] },
         "copywriter": { "label": "Copywriter", "description": "Menulis teks iklan, halaman penjualan, email, deskripsi produk, dan tagline yang persuasif dan sesuai target pasar.", "tools": "Read, Write, Edit, Grep, Glob, WebSearch, WebFetch", "shirt": "#f0a33a", "pants": "#3a3f4b", "hair": "#161616", "face": "smile", "print": "letter" }
       }

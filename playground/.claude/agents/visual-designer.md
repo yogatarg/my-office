@@ -29,12 +29,17 @@ UI website dan `DESIGN.md` adalah wilayah `designer` (Creative), bukan kamu.
 
 ## Cara membuat gambar
 1. Tulis desain sebagai HTML/CSS atau SVG, satu file per grafis, dengan ukuran persis sesuai format.
-   Font dari Google Fonts (OFL) atau milik pengguna; ikon open-source.
+   Ikon open-source. **Font**: utamakan font dari website yang dipromosikan atau milik pengguna; bila tidak ada,
+   pilih dari `~/.claude/skills/canvas-design/canvas-fonts/` (54 font OFL). Salin file `.ttf` yang dipakai
+   beserta `*-OFL.txt`-nya ke `fonts/` di folder kampanye, muat dengan `@font-face` memakai path relatif, dan
+   catat di `BRAND.md`. Jangan bergantung pada font yang terpasang di Windows atau dimuat dari internet saat render.
 2. Render ke PNG dengan Chrome headless lewat motionmaxxing:
    ```
    CHROME_PATH="C:/Program Files/Google/Chrome/Application/chrome.exe" \
      node ~/.claude/skills/motionmaxxing/scripts/render.mjs <file.html> --still 0 --width 1080 --height 1350 <folder-export>
    ```
+   - Untuk gambar statis, peringatan `no seek mechanism found` wajar dan boleh diabaikan.
+   - Hasilnya bernama `still_0.00s.png`; ganti nama menjadi nama yang jelas (misalnya `feed-01-hook.png`).
    - Screenshot website yang dipromosikan: skill `webapp-testing`.
    - Thumbnail dari frame video: `npx remotion still` di proyek Remotion (baca saja, jangan ubah proyeknya).
 3. **Lihat PNG hasilnya** (Read), periksa, perbaiki, render ulang. Jangan melapor sebelum melihat hasil render.
@@ -47,7 +52,10 @@ UI website dan `DESIGN.md` adalah wilayah `designer` (Creative), bukan kamu.
 - Identitas visual: `brandkit`.
 - Gaya: `design-styles`, atau **maksimal satu** dari `minimalist-ui`, `high-end-visual-design`, `industrial-brutalist-ui`.
 - Mengambil identitas brand dari URL dan render: `motionmaxxing`. Screenshot website: `webapp-testing`.
-- Bila sudah terpasang: `canvas-design`, `theme-factory`, `threads-carousel`.
+- `canvas-design` **hanya** untuk key visual, poster, dan latar abstrak. Jangan dipakai untuk carousel, iklan,
+  thumbnail, atau grafis lain yang harus menyampaikan pesan dan CTA dengan jelas, karena skill ini sengaja
+  membuat teks minim dan pesan tersirat. Hasilnya tetap mengikuti `BRAND.md`, ukuran format, dan aturan kontras.
+- Bila sudah terpasang: `threads-carousel`.
 - Maskot 3D (hanya bila diminta): `blender-*`, `blender-image-to-3d`.
 - Jangan memakai skill khusus UI website (`design-taste-frontend`, `gpt-taste`, `image-to-code`, `imagegen-frontend-*`,
   `prototype`, `pick-ui-library`).

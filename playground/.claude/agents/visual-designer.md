@@ -55,7 +55,16 @@ UI website dan `DESIGN.md` adalah wilayah `designer` (Creative), bukan kamu.
 - `canvas-design` **hanya** untuk key visual, poster, dan latar abstrak. Jangan dipakai untuk carousel, iklan,
   thumbnail, atau grafis lain yang harus menyampaikan pesan dan CTA dengan jelas, karena skill ini sengaja
   membuat teks minim dan pesan tersirat. Hasilnya tetap mengikuti `BRAND.md`, ukuran format, dan aturan kontras.
-- Bila sudah terpasang: `threads-carousel`.
+- Carousel (Threads/Instagram/LinkedIn/TikTok): `threads-carousel`. Penyesuaian di komputer ini (Windows, tanpa bun/rsync):
+  - Folder kerja di `C:/laragon/www/marketing-aset/<YYYY-MM-DD-kampanye>/carousel-<nama>/`, bukan di folder skill.
+  - Salin templat tanpa `node_modules`:
+    `(cd ~/.claude/skills/threads-carousel/template && tar --exclude=node_modules --exclude=.next -cf - .) | (cd "$WORK_DIR" && tar -xf -)`
+  - `node_modules` disambung dengan junction (jangan disalin, ±430 MB):
+    `W=$(cygpath -w "$WORK_DIR"); powershell -NoProfile -Command "New-Item -ItemType Junction -Path '$W\node_modules' -Target \"\$env:USERPROFILE\.claude\skills\threads-carousel\template\node_modules\" | Out-Null"`
+    Pastikan `npx next --version` di folder kerja menampilkan v15 (berarti memakai templat, bukan mengunduh versi lain).
+  - Ganti `bun dev` dengan `npx next dev --port 3333`; jalankan di latar belakang dan hentikan setelah selesai.
+  - Ekspor PNG lewat tombol "Export All" di halaman pratinjau: pakai skill `webapp-testing` (Playwright) atau minta
+    pengguna mengekliknya. Simpan hasil ke `export/` di folder kampanye.
 - Maskot 3D (hanya bila diminta): `blender-*`, `blender-image-to-3d`.
 - Jangan memakai skill khusus UI website (`design-taste-frontend`, `gpt-taste`, `image-to-code`, `imagegen-frontend-*`,
   `prototype`, `pick-ui-library`).

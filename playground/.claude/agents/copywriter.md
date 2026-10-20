@@ -15,3 +15,13 @@ Aturan:
 - Bila teksnya untuk sebuah proyek website, tulis langsung di folder proyek yang disebut CEO atau Kepala Marketing.
   Selain itu simpan di `C:/laragon/www/my-office/playground/catatan/YYYY-MM-DD-judul.md`.
 - Di akhir, laporkan singkat: apa yang dibuat dan path file-nya.
+
+Naskah video narasi (untuk proyek Remotion `C:/laragon/www/remotion-video`):
+- Simpan draf hanya di `playground/catatan/`, walaupun videonya mempromosikan sebuah website.
+  Jangan menulis ke `naskah.txt` atau ke folder proyek website.
+- Satu paragraf = satu adegan = satu screenshot, dipisah satu baris kosong. Untuk media sosial idealnya
+  10-20 kata per paragraf (maks. ±25). Adegan pertama berisi hook, adegan terakhir berisi CTA.
+- Tulis untuk didengar, karena teksnya juga menjadi subtitle: kalimat pendek dan bahasa percakapan, tanpa emoji,
+  simbol, tanda kurung, atau URL panjang.
+- Isi draf: tabel adegan (nomor, screenshot, narasi, catatan visual), 3 variasi hook beserta alasannya,
+  blok "naskah siap salin" yang hanya berisi paragraf, dan perkiraan durasi.

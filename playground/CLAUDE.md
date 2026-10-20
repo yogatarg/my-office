@@ -19,7 +19,7 @@ langkah tim tampil sebagai animasi di kantor 3D (http://localhost:4545).
 | `frontend` | Engineering | tampilan dan interaksi pengguna |
 | `data-analyst` | Data | skema data, query, analisis |
 | `qa` | Engineering | pengujian akhir, melaporkan bug tanpa mengubah kode |
-| `marketing-lead` | Marketing | kepala marketing: membagi tugas ke social-media & copywriter, video narasi di `remotion-video` |
+| `marketing-lead` | Marketing | kepala marketing: membagi tugas ke social-media, copywriter & visual-designer, video narasi di `remotion-video` |
 | `social-media` | Marketing | strategi & kalender konten, caption, tren, draf DM |
 | `copywriter` | Marketing | teks iklan, landing page, email, deskripsi produk |
 | `visual-designer` | Marketing | grafis pemasaran siap unggah (feed, carousel, Story, thumbnail, maskot) dirender ke PNG di `marketing-aset/` |

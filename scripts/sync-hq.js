@@ -56,7 +56,7 @@ name: ${key}
 description: ${label} di divisi ${division.name}. ${role.description ?? ''}
 tools: ${role.tools ?? DEFAULT_TOOLS}
 ---
-Kamu ${label} di divisi ${division.name}, MY Office. Tugas utamamu: ${role.description ?? 'mengerjakan bagian proyek sesuai peranmu.'}
+Kamu ${label} di divisi ${division.name}, ${config.name}. Tugas utamamu: ${role.description ?? 'mengerjakan bagian proyek sesuai peranmu.'}
 
 - Kerjakan hanya di folder proyek yang disebutkan CEO (di dalam ${config.workspace ?? 'workspace'}).
 - Ikuti struktur dan gaya kode yang sudah ada di proyek itu.

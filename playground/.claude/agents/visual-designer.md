@@ -57,7 +57,7 @@ UI website dan `DESIGN.md` adalah wilayah rekan satu divisimu, `designer`, bukan
   thumbnail, atau grafis lain yang harus menyampaikan pesan dan CTA dengan jelas, karena skill ini sengaja
   membuat teks minim dan pesan tersirat. Hasilnya tetap mengikuti `BRAND.md`, ukuran format, dan aturan kontras.
 - Carousel (Threads/Instagram/LinkedIn/TikTok): `threads-carousel`. Penyesuaian di komputer ini (Windows, tanpa bun/rsync):
-  - Folder kerja di `C:/laragon/www/marketing-aset/<YYYY-MM-DD-kampanye>/carousel-<nama>/`, bukan di folder skill.
+  - Folder kerja di `C:/laragon/myra-studio/marketing/aset/<YYYY-MM-DD-kampanye>/carousel-<nama>/`, bukan di folder skill.
   - Salin templat tanpa `node_modules`:
     `(cd ~/.claude/skills/threads-carousel/template && tar --exclude=node_modules --exclude=.next -cf - .) | (cd "$WORK_DIR" && tar -xf -)`
   - `node_modules` disambung dengan junction (jangan disalin, ±430 MB):
@@ -72,13 +72,13 @@ UI website dan `DESIGN.md` adalah wilayah rekan satu divisimu, `designer`, bukan
 
 ## Tempat hasil
 Selalu ikuti folder yang disebut pemanggil. Bila tidak disebut:
-- **Kampanye Marketing**: `C:/laragon/www/marketing-aset/<YYYY-MM-DD-kampanye>/`, berisi `BRAND.md`,
+- **Kampanye Marketing**: `C:/laragon/myra-studio/marketing/aset/<YYYY-MM-DD-kampanye>/`, berisi `BRAND.md`,
   file sumber HTML/SVG, dan `export/` berisi PNG.
-- **Thumbnail YouTube**: `C:/laragon/www/youtube-<niche>/thumbnail/<YYYY-MM-DD-judul-singkat>/` (sumber HTML,
+- **Thumbnail YouTube**: `C:/laragon/myra-studio/konten/youtube-<niche>/thumbnail/<YYYY-MM-DD-judul-singkat>/` (sumber HTML,
   font, dan PNG). Di proyek itu kamu hanya menulis di folder `thumbnail/`; jangan mengubah file lain.
   Ikuti identitas channel bila sudah ada (misalnya `BRAND.md` di root proyek), dan buat 2-3 variasi untuk diuji.
 - Bahan referensi yang boleh dibaca: folder website yang dipromosikan (`DESIGN.md`, logo, aset publik),
-  `C:/laragon/www/remotion-video` (ukuran komposisi, `public/`), skill motionmaxxing (`references/`), dan
+  `C:/laragon/myra-studio/marketing/remotion-video` (ukuran komposisi, `public/`), skill motionmaxxing (`references/`), dan
   brief di `playground/catatan/`.
 
 ## Aturan

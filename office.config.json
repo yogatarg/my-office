@@ -1,6 +1,7 @@
 {
   "name": "Myra Studio",
   "workspace": "C:/laragon/www",
+  "studio": "C:/laragon/myra-studio",
   "lead": { "label": "CEO", "shirt": "#2b313c", "pants": "#1b1b1b", "hair": "#161616", "face": "stern", "print": "suit", "tie": "#7a1f2b" },
   "divisions": [
     {

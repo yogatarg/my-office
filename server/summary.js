@@ -33,12 +33,12 @@ async function readEvents(logDir) {
   return events.sort((a, b) => Date.parse(a.received_at) - Date.parse(b.received_at));
 }
 
-export async function summarize(logDir, { date = dayKey(new Date()), workspace = null, officeFolder = 'my-office' } = {}) {
+export async function summarize(logDir, { date = dayKey(new Date()), workspace = null, studio = null, officeFolder = 'my-office' } = {}) {
   const all = await readEvents(logDir);
   const days = [...new Set(all.map((e) => dayKey(new Date(e.received_at))))].sort();
   const events = all.filter((e) => dayKey(new Date(e.received_at)) === date);
   // Folder kantor sendiri bukan proyek; pixel-office adalah nama lamanya yang masih ada di log lama.
-  const projectOf = projectFinder(workspace, [officeFolder.toLowerCase(), 'pixel-office']);
+  const projectOf = projectFinder(workspace, [officeFolder.toLowerCase(), 'pixel-office'], studio);
 
   const agents = new Map();
   const agent = (key) => {

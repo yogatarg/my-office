@@ -63,20 +63,30 @@ export function firstLine(text, max = 90) {
   return line.length > max ? line.slice(0, max - 1) + '…' : line;
 }
 
-// Mengenali proyek dari path di tool_input: segmen pertama setelah folder workspace.
+// Pola path untuk satu folder akar; `skip` = jumlah segmen yang dilewati sebelum nama proyek.
 // Menerima gaya Windows (C:\laragon\www) maupun Git Bash (/c/laragon/www).
-export function projectFinder(workspace, ignore = ['my-office']) {
-  if (!workspace) return () => null;
-  const base = workspace.replace(/\\/g, '/').replace(/\/+$/, '');
+function rootPattern(root, skip) {
+  const base = root.replace(/\\/g, '/').replace(/\/+$/, '');
   const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const bash = base.replace(/^([A-Za-z]):/, (m, d) => `/${d.toLowerCase()}`);
-  const pattern = new RegExp(`(?:${escape(base)}|${escape(bash)})/([^/\\s"'\`]+)`, 'i');
+  const segment = `[^/\\s"'\`]+`;
+  return new RegExp(`(?:${escape(base)}|${escape(bash)})/(?:${segment}/){${skip}}(${segment})`, 'i');
+}
+
+// Mengenali proyek dari path di tool_input: segmen pertama setelah folder workspace, atau
+// segmen setelah folder divisi di folder studio (studio/<divisi>/<proyek>).
+export function projectFinder(workspace, ignore = ['my-office'], studio = null) {
+  const patterns = [studio && rootPattern(studio, 1), workspace && rootPattern(workspace, 0)].filter(Boolean);
+  if (!patterns.length) return () => null;
   return (e) => {
     const input = e.tool_input ?? {};
     for (const text of [input.file_path, input.path, input.notebook_path, input.command, input.prompt]) {
       if (!text) continue;
-      const match = String(text).replace(/\\/g, '/').match(pattern);
-      if (match && !ignore.includes(match[1].toLowerCase())) return match[1];
+      const normalized = String(text).replace(/\\/g, '/');
+      for (const pattern of patterns) {
+        const match = normalized.match(pattern);
+        if (match && !ignore.includes(match[1].toLowerCase())) return match[1];
+      }
     }
     return null;
   };
@@ -85,7 +95,7 @@ export function projectFinder(workspace, ignore = ['my-office']) {
 export function createTracker(config) {
   const agents = new Map();
   const lead = config.lead.label;
-  const projectOf = projectFinder(config.workspace, [config.officeFolder.toLowerCase()]);
+  const projectOf = projectFinder(config.workspace, [config.officeFolder.toLowerCase()], config.studio);
   const state = { project: null }; // proyek yang terakhir disentuh tim
 
   function styleFor(key) {

@@ -27,7 +27,7 @@ langkah tim tampil sebagai animasi di kantor 3D (http://localhost:4545).
 | `social-media` | Marketing | strategi & kalender konten, caption, tren, draf DM |
 | `copywriter` | Marketing | teks iklan, landing page, email, deskripsi produk |
 | `admin-sosmed` | Marketing | memegang akun media sosial brand studio: menyusun paket posting, pratinjau, dan memposting ke IG/FB/Threads lewat API resmi setelah pengguna menyetujui. Diajak bicara langsung lewat `npm run chat` |
-| `visual-designer` | Creative | grafis pemasaran siap unggah (feed, carousel, Story, thumbnail, maskot) dirender ke PNG di `marketing-aset/` |
+| `visual-designer` | Creative | grafis pemasaran siap unggah (feed, carousel, Story, thumbnail, maskot) dirender ke PNG di `marketing/aset/` |
 | `youtube-creator` | Konten | channel YouTube: riset topik, naskah, suara & render di `youtube-<niche>`, paket unggah, evaluasi. Biasanya diajak bicara langsung lewat `npm run chat` |
 
 Daftar ini mengikuti `office.config.json` di folder `my-office`.
@@ -38,14 +38,23 @@ Daftar ini mengikuti `office.config.json` di folder `my-office`.
 |---|---|
 | Pertanyaan ringan, obrolan, sapaan | **Dijawab di chat saja**, tanpa membuat file |
 | Riset, mencari data, rekomendasi, ringkasan, laporan (hasilnya dokumen) | **Satu folder: `playground/catatan/`**, nama file `YYYY-MM-DD-judul-singkat.md` (kebab-case) |
-| Membuat proyek (aplikasi, website, skrip, dll.) | **Folder sendiri: `C:/laragon/www/<nama-proyek>`** (kebab-case) |
+| Membuat proyek web (website, aplikasi web, API) | **Folder sendiri: `C:/laragon/www/<nama-proyek>`** (kebab-case) |
+| Hasil dan alat divisi yang bukan web (aset grafis, video, skrip posting, channel YouTube) | **Folder studio: `C:/laragon/myra-studio/<divisi>/<nama>`** |
 
 - Folder `catatan/` berisi semua dokumen yang bukan proyek, walaupun isinya membahas proyek tertentu
   (misalnya rekomendasi hosting untuk sebuah proyek). Jangan menaruh dokumen seperti itu di folder proyeknya
   kecuali pengguna memintanya.
 - Jangan membuat file lain langsung di `playground/` selain di `catatan/`.
-- Proyek baru selalu berupa **folder baru** di `C:/laragon/www` (contoh: `C:/laragon/www/toko-kue`).
+- Proyek web baru selalu berupa **folder baru** di `C:/laragon/www` (contoh: `C:/laragon/www/toko-kue`).
+  `www` hanya untuk proyek web; Laragon membuat alamat `<nama>.test` untuk setiap folder di sana.
   Sebelum membuatnya, pastikan namanya belum dipakai; jangan menimpa proyek yang sudah ada.
+- Hasil dan alat divisi yang bukan web ada di **`C:/laragon/myra-studio/<divisi>/`**:
+  - `marketing/aset/`: aset kampanye dan grafis (dulu `C:/laragon/www/marketing-aset`).
+  - `marketing/posting/`: skrip posting dan antrean paket (dulu `C:/laragon/www/mylab-posting`).
+  - `marketing/remotion-video/`: proyek video narasi (dulu `C:/laragon/www/remotion-video`).
+  - `konten/youtube-<niche>/`: proyek channel YouTube.
+  Divisi lain yang butuh tempat serupa membuat subfolder dengan nama divisinya (huruf kecil). Dokumen lama di
+  `catatan/` mungkin masih menyebut path lama di atas; artinya sama dengan lokasi barunya.
 - Jangan mengubah folder `my-office` (kantor ini sendiri), kecuali pengguna memintanya secara langsung.
 - Isi `playground/` selain konfigurasi tidak ikut ke git (repo Myra Studio publik), jadi `catatan/` aman
   untuk dokumen internal.
@@ -79,7 +88,7 @@ rekomendasi), simpan di `playground/catatan/` lalu sebutkan path-nya di jawaban.
 - Tim **tidak mengirim pesan, DM, email, atau memposting** di media sosial atas nama pengguna, dan tidak login
   ke akun apa pun. Untuk pemasaran, hasilnya selalu berupa draf yang ditinjau dan dikirim sendiri oleh pengguna.
   **Satu-satunya pengecualian:** `admin-sosmed` boleh memposting ke akun media sosial brand studio (Instagram, Facebook Page,
-  Threads) lewat API resmi di `C:/laragon/www/mylab-posting`, hanya setelah pengguna menyetujui pratinjau paket
+  Threads) lewat API resmi di `C:/laragon/myra-studio/marketing/posting`, hanya setelah pengguna menyetujui pratinjau paket
   tersebut di chat. Ia tetap tidak membalas DM/komentar, tidak menghapus posting, dan tidak login lewat browser.
 - Jangan menulis kredensial (API key, password) di kode. Gunakan `.env` dan beri contoh di `.env.example`.
 - Saat memanggil subagent, selalu sebutkan path folder proyek yang dikerjakan.

@@ -37,7 +37,7 @@ app.get('/api/summary', async (req, res) => {
   try {
     const config = JSON.parse(await readFile(path.join(root, 'office.config.json'), 'utf8'));
     const date = /^\d{4}-\d{2}-\d{2}$/.test(req.query.date ?? '') ? req.query.date : undefined;
-    res.json(await summarize(path.join(root, 'logs'), { date, workspace: config.workspace, officeFolder: path.basename(root) }));
+    res.json(await summarize(path.join(root, 'logs'), { date, workspace: config.workspace, studio: config.studio, officeFolder: path.basename(root) }));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

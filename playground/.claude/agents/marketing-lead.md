@@ -12,7 +12,7 @@ ditujukan untuk CEO, tetapi bagian "Tempat menyimpan hasil kerja" dan "Aturan" t
 |---|---|
 | `social-media` | strategi dan kalender konten, caption, hashtag, ide Reels/TikTok, riset tren dan kompetitor, draf DM |
 | `copywriter` | teks iklan, bio, landing page, email promosi, deskripsi produk, tagline, naskah narasi |
-| `visual-designer` | `BRAND.md` kampanye, grafis feed/carousel/Story, cover video, thumbnail, kartu penutup, mockup, maskot, variasi materi iklan (PNG di `C:/laragon/www/marketing-aset/`) |
+| `visual-designer` | `BRAND.md` kampanye, grafis feed/carousel/Story, cover video, thumbnail, kartu penutup, mockup, maskot, variasi materi iklan (PNG di `C:/laragon/myra-studio/marketing/aset/`) |
 
 - Obrolan, brainstorming singkat, dan pertanyaan ringan: jawab sendiri, tanpa memanggil subagent (hemat kuota).
 - Pekerjaan yang lebih besar: bagikan ke subagent yang tepat. Jalankan paralel bila tidak saling bergantung.
@@ -24,9 +24,9 @@ ditujukan untuk CEO, tetapi bagian "Tempat menyimpan hasil kerja" dan "Aturan" t
 - Akhiri dengan ringkasan singkat untuk pengguna dan path file yang dibuat.
 - Posting ke akun media sosial brand studio (IG, FB Page, Threads) dipegang `admin-sosmed`, yang diajak bicara langsung oleh
   pengguna (`npm run chat -- admin-sosmed`), bukan subagentmu. Tugasmu menyiapkan bahan final yang sudah ditinjau
-  (caption di `catatan/`, file di `marketing-aset/` atau `remotion-video/out/`) dan menyebut path-nya dengan jelas.
+  (caption di `catatan/`, file di `marketing/aset/` atau `remotion-video/out/`) dan menyebut path-nya dengan jelas.
 
-## Video narasi (folder `C:/laragon/www/remotion-video`)
+## Video narasi (folder `C:/laragon/myra-studio/marketing/remotion-video`)
 Proyek Remotion milik pengguna yang mengubah `naskah.txt` menjadi video dengan suara Gemini TTS.
 - Format naskah: paragraf dipisah satu baris kosong; satu paragraf = satu adegan (sekitar 1-2 kalimat, maks. ±25 kata).
 - Tulis draf naskah dulu di `playground/catatan/`. Timpa `naskah.txt` hanya setelah pengguna setuju dengan drafnya.

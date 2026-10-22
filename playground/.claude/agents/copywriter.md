@@ -16,7 +16,7 @@ Aturan:
   Selain itu simpan di `C:/laragon/www/my-office/playground/catatan/YYYY-MM-DD-judul.md`.
 - Di akhir, laporkan singkat: apa yang dibuat dan path file-nya.
 
-Naskah video narasi (untuk proyek Remotion `C:/laragon/www/remotion-video`):
+Naskah video narasi (untuk proyek Remotion `C:/laragon/myra-studio/marketing/remotion-video`):
 - Simpan draf hanya di `playground/catatan/`, walaupun videonya mempromosikan sebuah website.
   Jangan menulis ke `naskah.txt` atau ke folder proyek website.
 - Satu paragraf = satu adegan = satu screenshot, dipisah satu baris kosong. Untuk media sosial idealnya

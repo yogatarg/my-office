@@ -38,8 +38,10 @@ npm run sync                          # selaraskan hooks, izin workspace, dan fi
 cd playground && claude               # beri perintah, mis. "buatkan website toko kue sederhana"
 ```
 
-- `workspace` di `office.config.json` (bawaan `C:/laragon/www`) diberikan ke Claude Code lewat
-  `permissions.additionalDirectories`. Setiap edit dan perintah tetap meminta izin seperti biasa.
+- `workspace` di `office.config.json` (bawaan `C:/laragon/www`) untuk proyek web, dan `studio`
+  (`C:/laragon/myra-studio`) untuk hasil dan alat divisi yang bukan web (`<divisi>/<nama>`), diberikan ke
+  Claude Code lewat `permissions.additionalDirectories`. Setiap edit dan perintah tetap meminta izin seperti biasa.
+  Kantor 3D mengenali proyek dari path di kedua folder itu.
 - `playground/CLAUDE.md` adalah pedoman CEO: alur proyek baru (PM → DevOps → divisi → QA → laporan).
 - Tempat hasil kerja: pertanyaan ringan dijawab di chat; dokumen (riset, data, rekomendasi) disimpan di
   `playground/catatan/YYYY-MM-DD-judul.md`; proyek dibuat sebagai folder sendiri di workspace. Isi playground
@@ -59,7 +61,7 @@ npm run chat -- marketing-lead --continue   # lanjutkan obrolan terakhir
   jadi agen tetap memakai perannya sendiri.
 - **Kepala Marketing** (`marketing-lead`) membagi tugas ke Social Media dan Copywriter
   (`tools: Agent(social-media, copywriter)`) dan boleh menjalankan `npm run suara`, `render`, `buat-video` di proyek
-  Remotion `C:/laragon/www/remotion-video` untuk video narasi.
+  Remotion `C:/laragon/myra-studio/marketing/remotion-video` untuk video narasi.
 - Di kantor 3D, karyawan yang diajak bicara tetap di mejanya dengan status "Menunggu kamu", dan dialah yang
   duduk di kursi kepala ruang rapat saat bawahannya melapor.
 

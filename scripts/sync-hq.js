@@ -32,6 +32,7 @@ settings.hooks = Object.fromEntries(
 settings.permissions = { ...settings.permissions };
 const dirs = new Set(settings.permissions.additionalDirectories ?? []);
 if (config.workspace) dirs.add(config.workspace);
+if (config.studio) dirs.add(config.studio);
 settings.permissions.additionalDirectories = [...dirs];
 
 await mkdir(path.dirname(settingsPath), { recursive: true });

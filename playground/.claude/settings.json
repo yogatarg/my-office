@@ -104,13 +104,14 @@
   },
   "permissions": {
     "additionalDirectories": [
-      "C:/laragon/www"
+      "C:/laragon/www",
+      "C:/laragon/myra-studio"
     ],
     "ask": [
       "Bash(npm run posting:*)",
-      "Bash(npm --prefix C:/laragon/www/mylab-posting run posting:*)",
+      "Bash(npm --prefix C:/laragon/myra-studio/marketing/posting run posting:*)",
       "Bash(node scripts/posting.mjs:*)",
-      "Bash(node C:/laragon/www/mylab-posting/scripts/posting.mjs:*)"
+      "Bash(node C:/laragon/myra-studio/marketing/posting/scripts/posting.mjs:*)"
     ]
   }
 }

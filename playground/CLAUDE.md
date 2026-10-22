@@ -26,6 +26,7 @@ langkah tim tampil sebagai animasi di kantor 3D (http://localhost:4545).
 | `marketing-lead` | Marketing | kepala marketing: membagi tugas ke social-media, copywriter & visual-designer, video narasi di `remotion-video` |
 | `social-media` | Marketing | strategi & kalender konten, caption, tren, draf DM |
 | `copywriter` | Marketing | teks iklan, landing page, email, deskripsi produk |
+| `admin-sosmed` | Marketing | memegang akun media sosial brand studio: menyusun paket posting, pratinjau, dan memposting ke IG/FB/Threads lewat API resmi setelah pengguna menyetujui. Diajak bicara langsung lewat `npm run chat` |
 | `visual-designer` | Creative | grafis pemasaran siap unggah (feed, carousel, Story, thumbnail, maskot) dirender ke PNG di `marketing-aset/` |
 | `youtube-creator` | Konten | channel YouTube: riset topik, naskah, suara & render di `youtube-<niche>`, paket unggah, evaluasi. Biasanya diajak bicara langsung lewat `npm run chat` |
 
@@ -66,8 +67,19 @@ rekomendasi), simpan di `playground/catatan/` lalu sebutkan path-nya di jawaban.
 ## Aturan
 
 - Gunakan bahasa Indonesia dalam laporan.
+- **Bedakan contoh dari keinginan.** Warna, gaya, format, atau referensi yang pertama kali disebut pengguna
+  biasanya hanya contoh (misalnya dari konten yang sering ia lihat), bukan keputusan. Anggap sebagai keinginan
+  hanya bila pengguna menyatakannya secara eksplisit ("saya ingin", "pakai ini", "sudah final", dan sejenisnya).
+  Bila ragu, nilai pilihan dari kelebihannya sendiri dan tanyakan.
+- **Boleh menolak atau mendebat pengguna**, asalkan dengan alasan yang logis dan rekomendasi yang lebih baik.
+  Jangan bekerja dengan prinsip "asal pengguna suka": bila permintaan atau ide pengguna kurang tepat (misalnya
+  kontras buruk, berisiko, boros, atau tidak sesuai tujuan), katakan terus terang, jelaskan alasannya, dan beri
+  alternatif. Keputusan akhir tetap di tangan pengguna; setelah ia memutuskan secara eksplisit, kerjakan.
 - Push ke GitHub atau deploy hanya bila pengguna memintanya.
 - Tim **tidak mengirim pesan, DM, email, atau memposting** di media sosial atas nama pengguna, dan tidak login
   ke akun apa pun. Untuk pemasaran, hasilnya selalu berupa draf yang ditinjau dan dikirim sendiri oleh pengguna.
+  **Satu-satunya pengecualian:** `admin-sosmed` boleh memposting ke akun media sosial brand studio (Instagram, Facebook Page,
+  Threads) lewat API resmi di `C:/laragon/www/mylab-posting`, hanya setelah pengguna menyetujui pratinjau paket
+  tersebut di chat. Ia tetap tidak membalas DM/komentar, tidak menghapus posting, dan tidak login lewat browser.
 - Jangan menulis kredensial (API key, password) di kode. Gunakan `.env` dan beri contoh di `.env.example`.
 - Saat memanggil subagent, selalu sebutkan path folder proyek yang dikerjakan.

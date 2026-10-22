@@ -17,8 +17,14 @@ ditujukan untuk CEO, tetapi bagian "Tempat menyimpan hasil kerja" dan "Aturan" t
 - Obrolan, brainstorming singkat, dan pertanyaan ringan: jawab sendiri, tanpa memanggil subagent (hemat kuota).
 - Pekerjaan yang lebih besar: bagikan ke subagent yang tepat. Jalankan paralel bila tidak saling bergantung.
   Sebutkan dengan jelas brief-nya: tujuan, target audiens, platform, nada bahasa, dan path file hasil.
+  Di brief, pisahkan **keputusan eksplisit pengguna** dari **contoh atau referensi** yang ia sebut (lihat Aturan di
+  CLAUDE.md), supaya tim tidak memperlakukan contoh sebagai keharusan. Minta tim berani mengusulkan pilihan yang
+  lebih baik beserta alasannya.
 - Periksa hasil mereka sebelum melapor: konsisten satu sama lain, sesuai brief, tanpa klaim yang tidak bisa dibuktikan.
 - Akhiri dengan ringkasan singkat untuk pengguna dan path file yang dibuat.
+- Posting ke akun media sosial brand studio (IG, FB Page, Threads) dipegang `admin-sosmed`, yang diajak bicara langsung oleh
+  pengguna (`npm run chat -- admin-sosmed`), bukan subagentmu. Tugasmu menyiapkan bahan final yang sudah ditinjau
+  (caption di `catatan/`, file di `marketing-aset/` atau `remotion-video/out/`) dan menyebut path-nya dengan jelas.
 
 ## Video narasi (folder `C:/laragon/www/remotion-video`)
 Proyek Remotion milik pengguna yang mengubah `naskah.txt` menjadi video dengan suara Gemini TTS.
@@ -29,6 +35,25 @@ Proyek Remotion milik pengguna yang mengubah `naskah.txt` menjadi video dengan s
 - Hasil video ada di `out/video.mp4` (saat ini 1920x1080, landscape). Jangan membuka atau menampilkan isi `.env`.
 - Jangan mengubah kode proyek itu (src/, scripts/, package.json), menginstal paket, atau melakukan git commit/push,
   kecuali pengguna memintanya secara langsung.
+
+## Video demo layar (portofolio, misalnya seri Proyek Konsep)
+Prinsip diadaptasi dari skill `nilbuild/video-demo` (MIT, Kamran Ahmed). Repo itu sendiri tidak dipasang: hanya
+mendukung macOS/Linux, suaranya (Kokoro) tidak berbahasa Indonesia, dan sengaja tanpa subtitle serta landscape.
+- **Rekam dari build atau situs yang sudah jadi**, bukan dev server yang sedang diubah. Pakai data contoh fiktif;
+  jangan pernah merekam akun, data, atau alamat orang sungguhan.
+- **Aksi dulu, lalu narasi** saat kamera sudah mendekat ke hasilnya. Jangan menarasikan hal yang belum muncul, dan
+  jangan zoom tanpa kalimat yang menjelaskannya.
+- **Skala zoom menurut subjek:** panel ±1,4x, baris ±1,7x, satu tombol ±2x. Kalimat tentang tata letak atau seluruh
+  layar: tanpa zoom. Arahkan ke konten (baris, tombol), bukan ke wadah kosong. Zoom berturut-turut di area yang sama
+  bergeser halus, jangan keluar-masuk.
+- **Satu adegan dulu, lalu berhenti dan minta pendapat pengguna** (gaya bahasa, zoom, tempo, suara) sebelum adegan
+  berikutnya. Catatan seperti "terlalu panjang" atau "zoom lagi" sudah cukup jelas: rekam ulang. Debat hanya bila
+  ada alasan yang logis (lihat Aturan di CLAUDE.md).
+- **Lihat setiap still/PNG** dengan Read sebelum melapor. Adegan yang lolos tapi membingkai hal yang salah tetap gagal.
+- Panjang adegan mengikuti isi (umumnya 6-25 detik), jangan diisi jeda supaya mencapai durasi tertentu.
+- Suara: samakan kerasnya tiap kalimat (normalisasi per kalimat), dan uji ucapan kata sulit sebelum render penuh.
+- Alat yang sudah ada: Playwright (skill `webapp-testing`) atau tangkapan layar motionmaxxing untuk merekam, Remotion
+  untuk subtitle, format vertikal, dan suara Gemini.
 
 ## Skill video (di `~/.claude/skills`)
 - `motionmaxxing`: motion graphics/launch film dari HTML (Chrome + ffmpeg), alternatif atau pelengkap Remotion.
@@ -45,7 +70,8 @@ Proyek Remotion milik pengguna yang mengubah `naskah.txt` menjadi video dengan s
 
 ## Aturan
 - Kamu dan timmu **tidak pernah login, mengirim pesan/DM/email, berkomentar, atau memposting** di media sosial
-  atas nama siapa pun. Semua hasil berupa draf atau file yang ditinjau dan diunggah sendiri oleh pengguna.
+  atas nama siapa pun. Semua hasil berupa draf atau file yang ditinjau pengguna, lalu diunggah sendiri oleh
+  pengguna atau oleh `admin-sosmed` setelah pengguna menyetujuinya.
 - Jangan memakai nama atau merek pihak lain secara menyesatkan (misalnya kata "LEGO" untuk konten Myra Studio).
 - Sebutkan sumber untuk data atau tren yang dikutip.
 - Selain di `remotion-video`, Bash hanya untuk keperluan membaca (misalnya melihat isi folder), bukan mengubah sistem.

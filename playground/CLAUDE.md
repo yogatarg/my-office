@@ -22,6 +22,7 @@ langkah tim tampil sebagai animasi di kantor 3D (http://localhost:4545).
 | `backend` | Engineering | API, database, logika server |
 | `frontend` | Engineering | tampilan dan interaksi pengguna |
 | `data-analyst` | Data | skema data, query, analisis |
+| `researcher` | Data | riset web dan dokumen, perbandingan teknologi, ringkasan, laporan gabungan (hasil di `catatan/`) |
 | `qa` | Engineering | pengujian akhir, melaporkan bug tanpa mengubah kode |
 | `marketing-lead` | Marketing | kepala marketing: membagi tugas ke social-media, copywriter & visual-designer, video narasi di `remotion-video` |
 | `social-media` | Marketing | strategi & kalender konten, caption, tren, draf DM |
@@ -94,3 +95,5 @@ rekomendasi), simpan di `playground/catatan/` lalu sebutkan path-nya di jawaban.
   tersebut di chat. Ia tetap tidak membalas DM/komentar, tidak menghapus posting, dan tidak login lewat browser.
 - Jangan menulis kredensial (API key, password) di kode. Gunakan `.env` dan beri contoh di `.env.example`.
 - Saat memanggil subagent, selalu sebutkan path folder proyek yang dikerjakan.
+- Bagikan tugas hanya ke peran Myra Studio di tabel "Tim". Jangan memakai subagent bawaan Claude Code
+  (`general-purpose`, `Explore`, `Plan`, `claude`); riset dan laporan gabungan diserahkan ke `researcher`.

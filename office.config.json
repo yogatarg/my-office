@@ -40,7 +40,8 @@
       "color": "#1f9a8a",
       "desks": 6,
       "roles": {
-        "data-analyst": { "label": "Data Analyst", "description": "Merancang skema data, menulis query, dan menganalisis data proyek.", "shirt": "#1f9a8a", "pants": "#2f2f2f", "hair": "#2a1a12", "face": "stern", "print": "letter", "accessory": ["glasses"] }
+        "data-analyst": { "label": "Data Analyst", "description": "Merancang skema data, menulis query, dan menganalisis data proyek.", "shirt": "#1f9a8a", "pants": "#2f2f2f", "hair": "#2a1a12", "face": "stern", "print": "letter", "accessory": ["glasses"] },
+        "researcher": { "label": "Peneliti", "description": "Riset web dan dokumen, perbandingan teknologi, ringkasan, serta laporan gabungan dari hasil kerja peran lain, dengan sumber yang bisa dicek.", "tools": "Read, Write, Edit, Grep, Glob, WebSearch, WebFetch", "shirt": "#2c7a9b", "pants": "#2f2f2f", "hair": "#6b3a1e", "face": "smile", "print": "letter", "accessory": ["glasses"] }
       }
     },
     {

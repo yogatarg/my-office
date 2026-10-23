@@ -29,6 +29,7 @@ langkah tim tampil sebagai animasi di kantor 3D (http://localhost:4545).
 | `admin-sosmed` | Marketing | memegang akun media sosial brand studio: menyusun paket posting, pratinjau, dan memposting ke IG/FB/Threads lewat API resmi setelah pengguna menyetujui. Diajak bicara langsung lewat `npm run chat` |
 | `visual-designer` | Creative | grafis pemasaran siap unggah (feed, carousel, Story, thumbnail, maskot) dirender ke PNG di `marketing/aset/` |
 | `youtube-creator` | Konten | channel YouTube: riset topik, naskah, suara & render di `youtube-<niche>`, paket unggah, evaluasi. Biasanya diajak bicara langsung lewat `npm run chat` |
+| `n8n-specialist` | Otomasi | workflow n8n: merancang dan memvalidasi JSON (n8n-mcp) di `myra-studio/otomasi/n8n/`, siap diimpor pengguna; tidak mengaktifkan workflow |
 
 Daftar ini mengikuti `office.config.json` di folder `my-office`.
 
@@ -53,6 +54,7 @@ Daftar ini mengikuti `office.config.json` di folder `my-office`.
   - `marketing/posting/`: skrip posting dan antrean paket (dulu `C:/laragon/www/mylab-posting`).
   - `marketing/remotion-video/`: proyek video narasi (dulu `C:/laragon/www/remotion-video`).
   - `konten/youtube-<niche>/`: proyek channel YouTube.
+  - `otomasi/n8n/`: workflow n8n (JSON siap impor dan panduannya).
   Divisi lain yang butuh tempat serupa membuat subfolder dengan nama divisinya (huruf kecil). Dokumen lama di
   `catatan/` mungkin masih menyebut path lama di atas; artinya sama dengan lokasi barunya.
 - Jangan mengubah folder `my-office` (kantor ini sendiri), kecuali pengguna memintanya secara langsung.

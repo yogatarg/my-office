@@ -72,6 +72,15 @@
       "roles": {
         "youtube-creator": { "label": "YouTube Creator", "description": "Mengelola channel YouTube: riset topik, naskah, suara dan render Remotion, paket unggah, serta evaluasi dari data YouTube Studio.", "tools": "Read, Write, Edit, Grep, Glob, WebSearch, WebFetch, Bash, Agent(visual-designer)", "shirt": "#b8323a", "pants": "#1f1f24", "hair": "#3b2216", "face": "grin", "print": "letter", "accessory": "headset" }
       }
+    },
+    {
+      "id": "otomasi",
+      "name": "Otomasi",
+      "color": "#d9a21b",
+      "desks": 6,
+      "roles": {
+        "n8n-specialist": { "label": "Spesialis n8n", "description": "Merancang, membangun, dan memperbaiki workflow n8n sebagai file JSON yang divalidasi dengan n8n-mcp, siap diimpor pengguna.", "tools": "Read, Write, Edit, Grep, Glob, WebSearch, WebFetch, mcp__n8n-mcp__tools_documentation, mcp__n8n-mcp__search_nodes, mcp__n8n-mcp__get_node, mcp__n8n-mcp__validate_node, mcp__n8n-mcp__validate_workflow, mcp__n8n-mcp__search_templates, mcp__n8n-mcp__get_template", "shirt": "#d9a21b", "pants": "#27324a", "hair": "#161616", "face": "smile", "print": "letter", "accessory": ["glasses", "headset"] }
+      }
     }
   ],
   "fallback": {

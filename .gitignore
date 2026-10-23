@@ -6,7 +6,6 @@ logs/
 playground/*
 !playground/.claude/
 !playground/CLAUDE.md
-!playground/.mcp.json
 
 # Pengaturan pribadi Claude Code (izin yang disetujui, dll.) tidak ikut ke git.
 **/.claude/settings.local.json

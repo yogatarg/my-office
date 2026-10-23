@@ -2,7 +2,7 @@
 // Pemakaian: npm run chat -- <peran> [opsi claude lain, misalnya --continue]
 // Tanpa argumen: menampilkan daftar peran yang bisa diajak bicara.
 
-import { readdir } from 'node:fs/promises';
+import { readdir, access } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
@@ -22,7 +22,12 @@ if (!role || !roles.includes(role)) {
   process.exit(role ? 1 : 0);
 }
 
-const args = ['--agent', role, ...rest];
+// Server MCP khusus peran (playground/.claude/mcp/<peran>.json) hanya dimuat di sesi peran itu,
+// supaya sesi lain tidak ikut menjalankannya.
+const mcpConfig = path.join(hq, '.claude', 'mcp', `${role}.json`);
+const hasMcp = await access(mcpConfig).then(() => true, () => false);
+// Bentuk --opsi=nilai, karena --mcp-config menerima banyak nilai dan bisa menelan argumen sesudahnya.
+const args = ['--agent', role, ...(hasMcp ? [`--mcp-config=${mcpConfig}`] : []), ...rest];
 
 // claude.exe (installer resmi) bisa dijalankan langsung. Bila claude terpasang lewat npm (claude.cmd),
 // Windows butuh shell; argumen lalu dikutip supaya teks berspasi tidak terpecah.

@@ -29,7 +29,7 @@ langkah tim tampil sebagai animasi di kantor 3D (http://localhost:4545).
 | `admin-sosmed` | Marketing | memegang akun media sosial brand studio: menyusun paket posting, pratinjau, dan memposting ke IG/FB/Threads lewat API resmi setelah pengguna menyetujui. Diajak bicara langsung lewat `npm run chat` |
 | `visual-designer` | Creative | grafis pemasaran siap unggah (feed, carousel, Story, thumbnail, maskot) dirender ke PNG di `marketing/aset/` |
 | `youtube-creator` | Konten | channel YouTube: riset topik, naskah, suara & render di `youtube-<niche>`, paket unggah, evaluasi. Biasanya diajak bicara langsung lewat `npm run chat` |
-| `n8n-specialist` | Otomasi | workflow n8n: merancang dan memvalidasi JSON (n8n-mcp) di `myra-studio/otomasi/n8n/`, siap diimpor pengguna; tidak mengaktifkan workflow |
+| `n8n-specialist` | Otomasi | workflow n8n: merancang dan memvalidasi JSON (n8n-mcp) di `myra-studio/otomasi/n8n/`, siap diimpor pengguna; tidak mengaktifkan workflow. Diajak bicara langsung lewat `npm run chat` (alat validasi n8n-mcp hanya dimuat di sana) |
 
 Daftar ini mengikuti `office.config.json` di folder `my-office`.
 

@@ -32,6 +32,7 @@ langkah tim tampil sebagai animasi di kantor 3D (http://localhost:4545).
 | `youtube-creator` | Konten | channel YouTube: riset topik, naskah, suara & render di `youtube-<niche>`, paket unggah, evaluasi. Biasanya diajak bicara langsung lewat `npm run chat` |
 | `facebook-creator` | Konten | halaman Facebook: Reels sains sehari-hari dengan animasi stickman, naskah, olah suara & render di `facebook-<nama>`, paket unggah, evaluasi. Biasanya diajak bicara langsung lewat `npm run chat` |
 | `n8n-specialist` | Otomasi | workflow n8n: merancang dan memvalidasi JSON (n8n-mcp) di `myra-studio/otomasi/n8n/`, siap diimpor pengguna; tidak mengaktifkan workflow. Diajak bicara langsung lewat `npm run chat` (alat validasi n8n-mcp hanya dimuat di sana) |
+| `fact-checker` | Konten | memeriksa draf naskah YouTube dan Facebook: klaim vs sumber, klaim lemah, lisensi aset; hanya melapor tanpa mengubah file. Dipanggil oleh `youtube-creator` dan `facebook-creator` |
 
 Daftar ini mengikuti `office.config.json` di folder `my-office`.
 

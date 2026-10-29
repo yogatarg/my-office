@@ -71,7 +71,8 @@
       "color": "#b8323a",
       "desks": 6,
       "roles": {
-        "youtube-creator": { "label": "YouTube Creator", "description": "Mengelola channel YouTube: riset topik, naskah, suara dan render Remotion, paket unggah, serta evaluasi dari data YouTube Studio.", "tools": "Read, Write, Edit, Grep, Glob, WebSearch, WebFetch, Bash, Agent(visual-designer)", "shirt": "#b8323a", "pants": "#1f1f24", "hair": "#3b2216", "face": "grin", "print": "letter", "accessory": "headset" }
+        "youtube-creator": { "label": "YouTube Creator", "description": "Mengelola channel YouTube: riset topik, naskah, suara dan render Remotion, paket unggah, serta evaluasi dari data YouTube Studio.", "tools": "Read, Write, Edit, Grep, Glob, WebSearch, WebFetch, Bash, Agent(visual-designer)", "shirt": "#b8323a", "pants": "#1f1f24", "hair": "#3b2216", "face": "grin", "print": "letter", "accessory": "headset" },
+        "facebook-creator": { "label": "Facebook Creator", "description": "Mengelola halaman Facebook (mode profesional): Reels sains sehari-hari dengan animasi stickman buatan sendiri, dari naskah dan olah suara hingga render Remotion, paket unggah, dan evaluasi Dasbor Profesional.", "tools": "Read, Write, Edit, Grep, Glob, WebSearch, WebFetch, Bash, Agent(fact-checker, visual-designer)", "shirt": "#4a63c9", "pants": "#1f1f24", "hair": "#161616", "face": "grin", "print": "letter", "accessory": ["glasses"] }
       }
     },
     {

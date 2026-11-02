@@ -1,8 +1,9 @@
 // Mengobrol langsung dengan satu karyawan di kantor pusat, tanpa lewat CEO.
-// Pemakaian: npm run chat -- <peran> [opsi claude lain, misalnya --continue]
+// Pemakaian: npm run chat -- <peran|alias> [opsi claude lain, misalnya --continue]
+// Nama peran dan alias (field "alias" di office.config.json) tidak membedakan huruf besar-kecil.
 // Tanpa argumen: menampilkan daftar peran yang bisa diajak bicara.
 
-import { readdir, access } from 'node:fs/promises';
+import { readdir, readFile, access } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
@@ -14,12 +15,29 @@ const roles = (await readdir(path.join(hq, '.claude', 'agents')))
   .map((f) => f.slice(0, -3))
   .sort();
 
-const [role, ...rest] = process.argv.slice(2);
-if (!role || !roles.includes(role)) {
-  if (role) console.error(`Peran "${role}" tidak ditemukan di playground/.claude/agents.\n`);
+// Alias dari office.config.json: { "youtube-creator": { "alias": "yt" } } atau daftar alias.
+const config = JSON.parse(await readFile(path.join(root, 'office.config.json'), 'utf8'));
+const aliasOf = new Map(); // alias (huruf kecil) → peran
+for (const division of config.divisions ?? []) {
+  for (const [key, def] of Object.entries(division.roles ?? {})) {
+    for (const alias of [def.alias ?? []].flat()) {
+      const name = alias.toLowerCase();
+      if (roles.includes(name) || aliasOf.has(name)) console.warn(`[chat] alias "${alias}" bentrok, diabaikan`);
+      else aliasOf.set(name, key);
+    }
+  }
+}
+const lookup = (name) => aliasOf.get(name) ?? roles.find((r) => r.toLowerCase() === name);
+
+const [input, ...rest] = process.argv.slice(2);
+const role = input && lookup(input.toLowerCase());
+if (!role) {
+  if (input) console.error(`Peran "${input}" tidak ditemukan di playground/.claude/agents.\n`);
   console.log('Pemakaian: npm run chat -- <peran>\n');
-  console.log(`Peran yang tersedia: ${roles.join(', ')}`);
-  process.exit(role ? 1 : 0);
+  const aliasesFor = (r) => [...aliasOf].filter(([, target]) => target === r).map(([a]) => a);
+  const names = roles.map((r) => (aliasesFor(r).length ? `${aliasesFor(r).join('/')} (${r})` : r));
+  console.log(`Peran yang tersedia: ${names.join(', ')}`);
+  process.exit(input ? 1 : 0);
 }
 
 // Server MCP khusus peran (playground/.claude/mcp/<peran>.json) hanya dimuat di sesi peran itu,

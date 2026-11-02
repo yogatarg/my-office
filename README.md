@@ -53,12 +53,14 @@ cd playground && claude               # beri perintah, mis. "buatkan website tok
 
 ```bash
 npm run chat                          # daftar peran yang bisa diajak bicara
-npm run chat -- marketing-lead        # sesi langsung dengan Kepala Marketing (tanpa lewat CEO)
-npm run chat -- marketing-lead --continue   # lanjutkan obrolan terakhir
+npm run chat -- marketing             # sesi langsung dengan Kepala Marketing (tanpa lewat CEO)
+npm run chat -- marketing --continue  # lanjutkan obrolan terakhir
 ```
 
 - Menjalankan `claude --agent <peran>` di folder playground. Pedoman CEO memberi pengecualian untuk mode ini,
   jadi agen tetap memakai perannya sendiri.
+- Nama peran tidak membedakan huruf besar-kecil. Peran boleh diberi nama pendek lewat field `alias` di
+  `office.config.json` (misalnya `"alias": "yt"` untuk `youtube-creator`); nama lengkap tetap bisa dipakai.
 - **Kepala Marketing** (`marketing-lead`) membagi tugas ke Social Media dan Copywriter
   (`tools: Agent(social-media, copywriter)`) dan boleh menjalankan `npm run suara`, `render`, `buat-video` di proyek
   Remotion `C:/laragon/myra-studio/marketing/remotion-video` untuk video narasi.

@@ -111,7 +111,11 @@
       "Bash(npm run posting:*)",
       "Bash(npm --prefix C:/laragon/myra-studio/marketing/posting run posting:*)",
       "Bash(node scripts/posting.mjs:*)",
-      "Bash(node C:/laragon/myra-studio/marketing/posting/scripts/posting.mjs:*)"
+      "Bash(node C:/laragon/myra-studio/marketing/posting/scripts/posting.mjs:*)",
+      "Bash(npm run unggah:*)",
+      "Bash(npm --prefix C:/laragon/myra-studio/konten/unggah run unggah:*)",
+      "Bash(node scripts/unggah.mjs:*)",
+      "Bash(node C:/laragon/myra-studio/konten/unggah/scripts/unggah.mjs:*)"
     ]
   }
 }

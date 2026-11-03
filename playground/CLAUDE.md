@@ -33,6 +33,7 @@ langkah tim tampil sebagai animasi di kantor 3D (http://localhost:4545).
 | `facebook-creator` | Konten | halaman Facebook: Reels sains sehari-hari dengan animasi stickman, naskah, olah suara & render di `facebook-<nama>`, paket unggah, evaluasi. Biasanya diajak bicara langsung lewat `npm run chat` |
 | `n8n-specialist` | Otomasi | workflow n8n: merancang dan memvalidasi JSON (n8n-mcp) di `myra-studio/otomasi/n8n/`, siap diimpor pengguna; tidak mengaktifkan workflow. Diajak bicara langsung lewat `npm run chat` (alat validasi n8n-mcp hanya dimuat di sana) |
 | `fact-checker` | Konten | memeriksa draf naskah YouTube dan Facebook: klaim vs sumber, klaim lemah, lisensi aset; hanya melapor tanpa mengubah file. Dipanggil oleh `youtube-creator` dan `facebook-creator` |
+| `uploader` | Konten | mengunggah video YouTube Creator & Reels Facebook Creator secara terjadwal lewat API resmi, hanya dengan KODE persetujuan pengguna. Dipanggil oleh `youtube-creator` dan `facebook-creator` |
 
 Daftar ini mengikuti `office.config.json` di folder `my-office`.
 
@@ -58,6 +59,7 @@ Daftar ini mengikuti `office.config.json` di folder `my-office`.
   - `marketing/remotion-video/`: proyek video narasi (dulu `C:/laragon/www/remotion-video`).
   - `konten/youtube-<niche>/`: proyek channel YouTube.
   - `konten/facebook-<nama>/`: proyek halaman Facebook (Reels stickman).
+  - `konten/unggah/`: skrip unggah YouTube & Facebook dan antrean paket unggah (dipakai `uploader`).
   - `otomasi/n8n/`: workflow n8n (JSON siap impor dan panduannya).
   Divisi lain yang butuh tempat serupa membuat subfolder dengan nama divisinya (huruf kecil). Dokumen lama di
   `catatan/` mungkin masih menyebut path lama di atas; artinya sama dengan lokasi barunya.
@@ -96,6 +98,9 @@ rekomendasi), simpan di `playground/catatan/` lalu sebutkan path-nya di jawaban.
   **Satu-satunya pengecualian:** `admin-sosmed` boleh memposting ke akun media sosial brand studio (Instagram, Facebook Page,
   Threads) lewat API resmi di `C:/laragon/myra-studio/marketing/posting`, hanya setelah pengguna menyetujui pratinjau paket
   tersebut di chat. Ia tetap tidak membalas DM/komentar, tidak menghapus posting, dan tidak login lewat browser.
+  **Pengecualian kedua:** `uploader` boleh mengunggah video terjadwal ke channel YouTube Creator dan halaman
+  Facebook Creator lewat API resmi di `C:/laragon/myra-studio/konten/unggah`, hanya untuk paket dengan KODE
+  persetujuan yang sudah disetujui pengguna. Ia juga tidak login lewat browser, tidak berkomentar, dan tidak menghapus apa pun.
 - Jangan menulis kredensial (API key, password) di kode. Gunakan `.env` dan beri contoh di `.env.example`.
 - Saat memanggil subagent, selalu sebutkan path folder proyek yang dikerjakan.
 - Bagikan tugas hanya ke peran Myra Studio di tabel "Tim". Jangan memakai subagent bawaan Claude Code

@@ -23,8 +23,16 @@ Naskah video narasi (untuk proyek Remotion `C:/laragon/myra-studio/marketing/rem
   10-20 kata per paragraf (maks. ±25). Adegan pertama berisi hook, adegan terakhir berisi CTA.
 - Tulis untuk didengar, karena teksnya juga menjadi subtitle: kalimat pendek dan bahasa percakapan, tanpa emoji,
   simbol, tanda kurung, atau URL panjang.
+- Video sekarang vertikal dengan subtitle. Di blok "naskah siap salin", tandai kata aksen dengan `**kata**`, pindah
+  baris subtitle dengan `|`, dan pindah blok dengan `||` (penanda tidak ikut dibacakan suara; lihat
+  `remotion-video/PANDUAN-VIDEO.md`). Usulkan juga isi `video.json`: seri, judul cover, poin per adegan, dan CTA penutup.
 - Isi draf: tabel adegan (nomor, screenshot, narasi, catatan visual), 3 variasi hook beserta alasannya,
-  blok "naskah siap salin" yang hanya berisi paragraf, dan perkiraan durasi.
+  blok "naskah siap salin" (dengan penanda subtitle, untuk `naskah.txt`), blok **"teks untuk Google Vids"**, dan
+  perkiraan durasi.
+- Voiceover dibuat pengguna di **Google Vids** (keputusan pengguna 2026-10-30). Blok "teks untuk Google Vids" berisi
+  paragraf yang sama persis urutannya, tanpa `**`, `|`, `||`, emoji, simbol, tanda kurung, atau URL; paragraf dipisah
+  satu baris kosong; total maks. 2.500 karakter (batas Google Vids). Tulis angka dan singkatan sebagaimana harus
+  diucapkan (misalnya "seratus", "lima puluh ribu"), supaya teks subtitle dan suara tetap sama.
 - Gaya "orang yang menunjukkan layarnya ke temannya", bukan papan museum: pakai "kamu"/"aku" atau "kita",
   subjek-predikat-objek biasa, tanpa kalimat terbalik atau kata mutiara. Bacakan dalam hati; kalau janggal diucapkan, tulis ulang.
 - Hindari kata sifat pemasaran ("canggih", "praktis banget", "tanpa ribet", "terbaik"). Ceritakan apa yang terjadi di layar,

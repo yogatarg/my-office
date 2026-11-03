@@ -27,12 +27,32 @@ ditujukan untuk CEO, tetapi bagian "Tempat menyimpan hasil kerja" dan "Aturan" t
   (caption di `catatan/`, file di `marketing/aset/` atau `remotion-video/out/`) dan menyebut path-nya dengan jelas.
 
 ## Video narasi (folder `C:/laragon/myra-studio/marketing/remotion-video`)
-Proyek Remotion milik pengguna yang mengubah `naskah.txt` menjadi video dengan suara Gemini TTS.
+Proyek Remotion milik pengguna yang mengubah `naskah.txt` menjadi video dengan subtitle.
 - Format naskah: paragraf dipisah satu baris kosong; satu paragraf = satu adegan (sekitar 1-2 kalimat, maks. ±25 kata).
 - Tulis draf naskah dulu di `playground/catatan/`. Timpa `naskah.txt` hanya setelah pengguna setuju dengan drafnya.
-- Perintah yang boleh kamu jalankan di folder itu: `npm run suara`, `npm run render`, `npm run buat-video`.
-  `npm run suara` memakai kuota Gemini, jadi jalankan hanya bila pengguna memintanya.
-- Hasil video ada di `out/video.mp4` (saat ini 1920x1080, landscape). Jangan membuka atau menampilkan isi `.env`.
+- **Voiceover memakai Google Vids** (keputusan pengguna 2026-10-30). Pengguna sendiri yang membuatnya: menyalin teks
+  naskah ke Google Vids (video kosong, hanya fitur voiceover), memilih suara, lalu mengunduh MP4. Tugasmu:
+  1. Setelah draf disetujui, siapkan blok **"teks untuk Google Vids"**: teks bersih tanpa `**`, `|`, `||`, emoji,
+     simbol, atau URL; paragraf dipisah satu baris kosong dan urutannya sama persis dengan `naskah.txt`; total maks.
+     2.500 karakter (batas Google Vids). Tulis singkatan dan angka sebagaimana harus diucapkan bila perlu.
+  2. Minta pengguna menaruh unduhannya di `remotion-video/vids/` atau menyebut path-nya, lalu jalankan
+     `npm run impor-suara` (memotong per paragraf dan menghitung waktu kata, tanpa kuota). Periksa daftar yang
+     tercetak: tiap baris harus berisi paragraf yang benar. Bila meleset, laporkan; jangan dipaksa render.
+  3. `npm run render` dan `npm run cover`, lalu periksa still sebelum melapor.
+- Perintah yang boleh kamu jalankan di folder itu: `npm run impor-suara`, `npm run waktu`, `npm run render`,
+  `npm run cover`, `npm run buat-video` (impor-suara lalu render). `npm run suara` (Gemini TTS) hanya cadangan dan
+  memakai kuota API; jalankan hanya bila pengguna memintanya secara langsung.
+- Sebelum mengerjakan video baru, arsipkan video sebelumnya ke `arsip/<nama>/` (naskah.txt, video.json,
+  src/generated/naskah.json, out/video.mp4).
+- Untuk pekerjaan Remotion, pakai skill resmi Remotion di `.agents/skills/` proyek itu (mulai dari `remotion-best-practices`).
+- Hasil video ada di `out/video.mp4`, **vertikal 1080x1920** dengan subtitle, label seri, dan kartu penutup;
+  `npm run cover` membuat `out/cover.png`. Tampilan per video diatur di `video.json` (tema, seri, judul cover, poin,
+  gambar adegan, demo layar situs dengan kamera, logo merek klien, CTA). Format penanda subtitle di naskah
+  (`**aksen**`, `|`, `||`) dan isi `video.json` ada di `PANDUAN-VIDEO.md`.
+  Jangan membuka atau menampilkan isi `.env`.
+- Mengubah `video.json` dan menaruh gambar adegan di `public/adegan/` boleh untuk video yang diminta pengguna.
+- Seri yang dipakai: Cek Dulu, Kilas Digital, Proyek Konsep, Dapur Myra. Konten tren sekitar 1 dari 3 video per
+  minggu, dari pindai tren mingguan `social-media` (minta setiap Senin atau saat pengguna memintanya).
 - Jangan mengubah kode proyek itu (src/, scripts/, package.json), menginstal paket, atau melakukan git commit/push,
   kecuali pengguna memintanya secara langsung.
 
@@ -51,13 +71,14 @@ mendukung macOS/Linux, suaranya (Kokoro) tidak berbahasa Indonesia, dan sengaja 
   ada alasan yang logis (lihat Aturan di CLAUDE.md).
 - **Lihat setiap still/PNG** dengan Read sebelum melapor. Adegan yang lolos tapi membingkai hal yang salah tetap gagal.
 - Panjang adegan mengikuti isi (umumnya 6-25 detik), jangan diisi jeda supaya mencapai durasi tertentu.
-- Suara: samakan kerasnya tiap kalimat (normalisasi per kalimat), dan uji ucapan kata sulit sebelum render penuh.
+- Suara: minta pengguna menguji ucapan kata sulit di Google Vids sebelum mengunduh voiceover penuh. Satu file Google
+  Vids untuk seluruh naskah sudah seragam kerasnya.
 - Alat yang sudah ada: Playwright (skill `webapp-testing`) atau tangkapan layar motionmaxxing untuk merekam, Remotion
-  untuk subtitle, format vertikal, dan suara Gemini.
+  untuk subtitle, format vertikal, dan `layar` + `kamera` di `video.json` untuk geser/zoom; suara dari Google Vids.
 
 ## Skill video (di `~/.claude/skills`)
 - `motionmaxxing`: motion graphics/launch film dari HTML (Chrome + ffmpeg), alternatif atau pelengkap Remotion.
-  Kerjakan di folder proyek video, bukan di `playground/`. Suara ElevenLabs opsional; bila tidak ada key, pakai suara Gemini dari Remotion.
+  Kerjakan di folder proyek video, bukan di `playground/`. Suara ElevenLabs opsional; bila tidak ada key, pakai voiceover Google Vids (lihat di atas).
 - `blender-*` (animasi & rigging, render, shader, scripting, dll.) dan `blender-image-to-3d`: hanya bila maskot dibuat 3D.
   Blender 5.2 terpasang di `C:/Program Files/Blender Foundation/Blender 5.2`.
 - Membaca dan menjalankan skrip skill ini boleh selama untuk pekerjaan video yang diminta pengguna.

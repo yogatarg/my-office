@@ -107,7 +107,12 @@
       "C:/laragon/www",
       "C:/laragon/myra-studio"
     ],
+    "allow": [
+      "Bash(python C:/laragon/www/my-office/scripts/qa-chrome.py *)"
+    ],
     "ask": [
+      "Bash(python C:/laragon/www/my-office/scripts/qa-chrome.py --luar*)",
+      "Bash(python C:/laragon/www/my-office/scripts/qa-chrome.py * --luar*)",
       "Bash(npm run posting:*)",
       "Bash(npm --prefix C:/laragon/myra-studio/marketing/posting run posting:*)",
       "Bash(node scripts/posting.mjs:*)",

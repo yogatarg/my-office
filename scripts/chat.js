@@ -45,7 +45,9 @@ if (!role) {
 const mcpConfig = path.join(hq, '.claude', 'mcp', `${role}.json`);
 const hasMcp = await access(mcpConfig).then(() => true, () => false);
 // Bentuk --opsi=nilai, karena --mcp-config menerima banyak nilai dan bisa menelan argumen sesudahnya.
-const args = ['--agent', role, ...(hasMcp ? [`--mcp-config=${mcpConfig}`] : []), ...rest];
+// Peran dengan "chrome": true di office.config.json selalu tersambung ke Claude in Chrome.
+const roleDef = (config.divisions ?? []).map((d) => d.roles?.[role]).find(Boolean);
+const args = ['--agent', role, ...(roleDef?.chrome ? ['--chrome'] : []), ...(hasMcp ? [`--mcp-config=${mcpConfig}`] : []), ...rest];
 
 // claude.exe (installer resmi) bisa dijalankan langsung. Bila claude terpasang lewat npm (claude.cmd),
 // Windows butuh shell; argumen lalu dikutip supaya teks berspasi tidak terpecah.

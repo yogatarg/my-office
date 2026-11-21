@@ -55,6 +55,15 @@
       }
     },
     {
+      "id": "security",
+      "name": "Keamanan",
+      "color": "#3b2f63",
+      "desks": 6,
+      "roles": {
+        "cyber-security": { "label": "Cyber Security", "alias": "cyber", "description": "Menguji keamanan website milik pengguna dari berbagai jenis serangan (injeksi, XSS, autentikasi, akses, konfigurasi, dependensi), melaporkan kerentanan beserta cara perbaikannya, dan menyerahkan perbaikan ke Backend setelah disetujui.", "tools": "Read, Write, Grep, Glob, Bash, Skill, WebSearch, WebFetch, Agent(backend)", "shirt": "#2a2440", "pants": "#1b1b1b", "hair": "#161616", "face": "skeptic", "print": "check", "accessory": ["glasses", "headset"] }
+      }
+    },
+    {
       "id": "marketing",
       "name": "Marketing",
       "color": "#d6457a",

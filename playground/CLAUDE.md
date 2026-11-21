@@ -34,6 +34,7 @@ langkah tim tampil sebagai animasi di kantor 3D (http://localhost:4545).
 | `n8n-specialist` | Otomasi | workflow n8n: merancang dan memvalidasi JSON (n8n-mcp) di `myra-studio/otomasi/n8n/`, siap diimpor pengguna; tidak mengaktifkan workflow. Diajak bicara langsung lewat `npm run chat` (alat validasi n8n-mcp hanya dimuat di sana) |
 | `fact-checker` | Konten | memeriksa draf naskah YouTube dan Facebook: klaim vs sumber, klaim lemah, lisensi aset; hanya melapor tanpa mengubah file. Dipanggil oleh `youtube-creator` dan `facebook-creator` |
 | `uploader` | Konten | mengunggah video YouTube Creator & Reels Facebook Creator secara terjadwal lewat API resmi, hanya dengan KODE persetujuan pengguna. Dipanggil oleh `youtube-creator` dan `facebook-creator` |
+| `cyber-security` | Keamanan | menguji keamanan website milik pengguna (injeksi, XSS, autentikasi, akses, konfigurasi, dependensi), laporan kerentanan + cara perbaikan di `catatan/`, tanpa mengubah kode. Domain online hanya bila pengguna menyatakan miliknya; sertakan kutipan pernyataan itu di brief. Brief perbaikannya diteruskan ke `backend`. Alias `cyber` di `npm run chat` |
 
 Daftar ini mengikuti `office.config.json` di folder `my-office`.
 
@@ -74,7 +75,8 @@ Daftar ini mengikuti `office.config.json` di folder `my-office`.
 2. Minta `pm` menyusun rencana dan pembagian tugas.
 3. `devops` menyiapkan folder proyek, `git init`, README, dan struktur awal.
 4. Bagikan pekerjaan ke peran yang relevan. Jalankan secara paralel bila bagian-bagiannya tidak saling bergantung.
-5. `qa` menguji di akhir. Bila ada bug penting, kembalikan ke peran yang bersangkutan.
+5. `qa` menguji di akhir. Bila ada bug penting, kembalikan ke peran yang bersangkutan. Untuk proyek dengan login,
+   data pengguna, atau pembayaran, minta juga `cyber-security` mengaudit keamanannya sebelum dianggap selesai.
 6. Laporkan ke pengguna: lokasi folder, cara menjalankan, apa yang sudah selesai, dan apa yang belum.
 
 **Tugas kecil atau pertanyaan**: kerjakan langsung atau panggil satu peran saja. Sapaan dan obrolan biasa
